@@ -241,7 +241,7 @@ p {
    這樣段落多高都不會裁到圖裡的角色。--bg 的路徑相對於這支樣式表。 */
 .band.has-bg {
   --art-top: 18.7vw; /* 圖高 (100vw × 2/3) 的 28% */
-  --art-bottom: 30vw; /* 圖高的 45% */
+  --art-bottom: 32vw; /* 圖高的 48% */
   padding-top: calc(var(--art-top) * 0.85);
   padding-bottom: calc(var(--art-bottom) + 12px);
 }
@@ -270,6 +270,16 @@ p {
   height: var(--art-bottom);
   background-position: center bottom;
   mask-image: linear-gradient(to top, #000 86%, transparent);
+}
+
+/* 暗底的圖是偏紫的黑（取樣約 #110f19），段落和卡片跟著它走，接縫才看不出來 */
+.band-recent.has-bg,
+.band-contact.has-bg {
+  background-color: #110f19;
+  --card: #1c1927;
+  --line: #332f43;
+  --paper-2: #332f43;
+  --muted: #aaa4bd;
 }
 
 /* 亮底的圖配亮底的段落，接縫才看不出來 */
