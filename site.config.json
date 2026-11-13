@@ -220,5 +220,13 @@
     "label": "Classroo",
     "url": "https://classroo.tw"
   },
-  "favicon": "favicon.png"
+  "favicon": "favicon.png",
+  "logoSkip": [
+    "freetube-ultra",
+    "ququ",
+    "atomicX",
+    "face-vid-template",
+    "DuckShot",
+    "lineX"
+  ]
 }

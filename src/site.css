@@ -341,20 +341,38 @@ p {
   }
 }
 
+/* 大卡裡的軟體截圖：做成一個小視窗嵌在卡片裡，不撐滿。
+   寬度上限 360px，比原圖的像素寬小，所以在高解析螢幕上也不會糊 */
 .lead.has-shot {
-  padding-bottom: 0;
+  padding-bottom: 26px;
 }
 
 .shot {
   display: block;
-  width: calc(100% + 44px);
-  max-width: none;
-  margin: 14px -22px 0;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  object-position: top center;
-  border-top: 1px solid var(--line);
-  border-radius: 0 0 var(--radius) var(--radius);
+  width: min(360px, 100%);
+  height: auto;
+  margin: auto auto 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px -14px rgb(22 20 15 / 0.35);
+}
+
+/* 真的 logo：不要底色，圓角小一點，維持原圖比例 */
+.logo-mark {
+  background: none;
+  object-fit: contain;
+  border-radius: 9px;
+}
+
+.with-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.with-logo .logo-mark {
+  width: 44px;
+  height: 44px;
 }
 
 .card.small.has-thumb {

@@ -12,6 +12,7 @@
     "build:offline": "node scripts/build.mjs --offline",
     "dev": "node scripts/build.mjs --offline && node scripts/serve.mjs",
     "serve": "node scripts/serve.mjs",
-    "test": "node --test \"test/*.test.mjs\""
+    "test": "node --test \"test/*.test.mjs\"",
+    "logos": "node scripts/fetch-logos.mjs"
   }
 }

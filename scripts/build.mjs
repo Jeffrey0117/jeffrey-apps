@@ -57,7 +57,7 @@ async function loadRaw() {
 // 圖片插槽：src/img/ 裡有對應檔名的圖就自動用上，沒有就維持純 CSS 的版本
 function findImages() {
   const dir = join(root, 'src', 'img')
-  const images = { cat: {}, shots: {}, og: '', hero: '', contact: '' }
+  const images = { cat: {}, shots: {}, logos: {}, og: '', hero: '', contact: '' }
   if (!existsSync(dir)) return images
   const isImage = (file) => /\.(png|jpe?g|webp|avif)$/i.test(file)
   const base = (file) => file.replace(/\.[^.]+$/, '').toLowerCase()
@@ -67,6 +67,10 @@ function findImages() {
     else if (name === 'og') images.og = `img/${file}`
     else if (name === 'hero') images.hero = `img/${file}`
     else if (name === 'contact') images.contact = `img/${file}`
+  }
+  const logos = join(dir, 'logos')
+  if (existsSync(logos)) {
+    for (const file of readdirSync(logos).filter(isImage)) images.logos[base(file)] = `img/logos/${file}`
   }
   const shots = join(dir, 'shots')
   if (existsSync(shots)) {
@@ -108,6 +112,6 @@ writeFileSync(join(dist, 'work', 'index.html'), renderWork(data), 'utf8')
 writeFileSync(join(dist, 'devlog', 'index.html'), renderDevlog(data), 'utf8')
 writeFileSync(join(dist, '.nojekyll'), '', 'utf8')
 
-const { cat, shots, og, hero, contact } = data.images
-console.log(`圖片：${hero ? '首頁主視覺 1、' : ''}${contact ? '聯絡卡 1、' : ''}吉祥物 ${Object.keys(cat).length}、截圖 ${Object.keys(shots).length}${og ? '、分享圖 1' : ''}`)
+const { cat, shots, logos, og, hero, contact } = data.images
+console.log(`圖片：${hero ? '首頁主視覺 1、' : ''}${contact ? '聯絡卡 1、' : ''}專案 logo ${Object.keys(logos).length}、吉祥物 ${Object.keys(cat).length}、截圖 ${Object.keys(shots).length}${og ? '、分享圖 1' : ''}`)
 console.log(`完成：${projects.length} 件作品、${data.summary.stars} 顆星、資料時間 ${asOf}${offline ? '（離線）' : ''}`)

@@ -11,6 +11,7 @@ htmlcat 切版職人的作品站。內容不是手寫的：build 時從 GitHub �
 ```bash
 npm run build           # 抓最新資料並產生 dist/
 npm run dev             # 用上次抓的資料重新產生，並在 http://localhost:4071 預覽（改版面用，快）
+npm run logos           # 掃各 repo 找 logo，縮成小圖放進 src/img/logos/（需要 ffmpeg，只補還沒有的）
 npm test
 ```
 

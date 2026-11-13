@@ -44,8 +44,24 @@ const ICONS = {
 }
 
 const stars = (count) => (count > 0 ? `<span class="stars">${ICONS.star}${count}</span>` : '')
+// 專案的小標誌：有真的 logo 就用，沒有就用彩色字母方塊。
+// logoMap 與 assetBase 由每個 render 函式一開始用 useLogos() 設定（各頁的相對路徑不同）
+let logoMap = {}
+let assetBase = './assets/'
+function useLogos(data, base) {
+  logoMap = data.images?.logos ?? {}
+  assetBase = base
+}
+
+const logoOf = (name) => {
+  const file = logoMap[String(name).toLowerCase()]
+  return file ? `${assetBase}${esc(file)}` : ''
+}
+
 const mono = (name) =>
-  `<span class="mono-mark" style="--tile:${esc(colorFor(name, palette))}" aria-hidden="true">${esc([...name][0].toUpperCase())}</span>`
+  logoOf(name)
+    ? `<img class="mono-mark logo-mark" src="${logoOf(name)}" alt="" width="38" height="38" loading="lazy">`
+    : `<span class="mono-mark" style="--tile:${esc(colorFor(name, palette))}" aria-hidden="true">${esc([...name][0].toUpperCase())}</span>`
 
 function layout({ config, root, title, description, active, body, asOf, images, version }) {
   const v = version ? `?v=${esc(version)}` : ''
@@ -163,7 +179,8 @@ function listRows(projects) {
 export function renderHome(data) {
   const { config, projects, summary, activity, updates, languages, asOf } = data
   palette = paletteOf(config)
-  const images = data.images ?? { cat: {}, shots: {}, og: '' }
+  const images = { cat: {}, shots: {}, logos: {}, og: '', ...(data.images ?? {}) }
+  useLogos(data, './assets/')
   const asset = (path) => `./assets/${esc(path)}`
   // 段落一律同一個紙色底，不鋪背景圖（試過，比素底醜，而且底色會跳）。圖只放在卡片裡
   const band = (id) => `<section id="${id}" class="band band-${id}">`
@@ -244,7 +261,7 @@ ${band('work')}
         lead
           ? `<a class="card lead${shotOf(lead.name) ? ' has-shot' : ''}" href="${esc(lead.link)}" rel="noopener">
         <p class="label">桌面 App・開源</p>
-        <h3>${esc(lead.name)}</h3>
+        <h3 class="with-logo">${logoOf(lead.name) ? mono(lead.name) : ''}${esc(lead.name)}</h3>
         <p>${esc(lead.blurb)}</p>
         <div class="meta">${stars(lead.stars)}<span class="chip">${esc(lead.language)}</span></div>
         ${
@@ -259,7 +276,7 @@ ${band('work')}
         dark
           ? `<a class="card ink dark-card" href="${esc(dark.link)}" rel="noopener">
         <p class="label">開源・GitHub</p>
-        <h3>${esc(dark.name)}</h3>
+        <h3 class="with-logo">${logoOf(dark.name) ? mono(dark.name) : ''}${esc(dark.name)}</h3>
         <p>${esc(dark.blurb)}</p>
         <div class="meta">${stars(dark.stars)}<span class="chip">${esc(dark.language)}</span></div>
       </a>`
@@ -374,6 +391,7 @@ ${band('contact')}
 export function renderDevlog(data) {
   const { config, log, activityLong, asOf } = data
   palette = paletteOf(config)
+  useLogos(data, '../assets/')
   const days = groupByDay(log)
   const dayLabel = (iso) => {
     const date = new Date(`${iso}T00:00:00Z`)
@@ -430,6 +448,7 @@ export function renderDevlog(data) {
 export function renderWork(data) {
   const { config, projects, summary, asOf } = data
   palette = paletteOf(config)
+  useLogos(data, '../assets/')
   const groups = summary.byCategory.filter((category) => category.count > 0)
 
   const body = `

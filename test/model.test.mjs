@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   buildLog, buildProjects, categorize, cleanText, colorFor, groupByDay, isSafeText, isVisible, languageCounts,
-  latestPerRepo, recentActivity, seededRandom, summarize, toProject, wordmarkCells,
+  latestPerRepo, recentActivity, scoreLogoPath, seededRandom, summarize, toProject, wordmarkCells,
 } from '../scripts/model.mjs'
 import { esc, renderDevlog, renderHome, renderWork } from '../scripts/render.mjs'
 
@@ -129,6 +129,25 @@ test('decoration is deterministic and stays inside the palette', () => {
   assert.ok(seededRandom(1)() < 1)
 })
 
+test('scoreLogoPath picks real logos and ignores look-alikes', () => {
+  const score = (path, size = 20_000, repo = 'MyApp') => scoreLogoPath(path, size, repo)
+  // 明確的 logo 贏過 icon，放在根目錄的贏過放很深的
+  assert.ok(score('logo.png') > score('assets/icon.png'))
+  assert.ok(score('myapp-logo.png') > score('assets/icon.png'))
+  assert.ok(score('logo.png') > score('packages/web/public/logo.png'))
+  assert.ok(score('public/icon-512.png') > 0)
+  assert.ok(score('assets/icon.png') > score('assets/icon-32.png'))
+  // 不是 logo 的東西一律 0
+  for (const path of [
+    'public/favicon.png', 'public/vite.png', 'src/assets/react.png', 'node_modules/x/logo.png',
+    'docs/screenshot.png', 'assets/demo.png', 'assets/tray-icon.png', 'assets/wechat-qrcode.png',
+    'logo.svg', 'logo.ico', 'README.md', 'src/logo.ts', 'test/fixtures/logo.png',
+  ]) {
+    assert.equal(score(path), 0, path)
+  }
+  assert.equal(score('logo.png', 300), 0) // 太小
+})
+
 test('toProject prefers the configured blurb and a real homepage', () => {
   const app = toProject(repo('BigApp', { homepage: 'https://bigapp.example', stars: 9 }), config)
   assert.equal(app.blurb, '自訂說明')
@@ -216,12 +235,18 @@ test('pages render the data and escape anything that came from outside', () => {
     ...data,
     config: { ...config, siteUrl: 'https://example.test/site/' },
     images: {
+      logos: { bigapp: 'img/logos/BigApp.webp' },
       cat: { hero: 'img/cat-hero.png' },
       shots: { bigapp: 'img/shots/BigApp.png', 'foo-kit': 'img/shots/foo-kit.png' },
       og: 'img/og.png',
     },
   })
   assert.match(withImages, /class="cat cat-hero" src="\.\/assets\/img\/cat-hero\.png"/)
+  // 有 logo 的專案用圖，沒有的維持字母方塊；各頁的相對路徑要對
+  assert.match(withImages, /class="mono-mark logo-mark" src="\.\/assets\/img\/logos\/BigApp\.webp"/)
+  assert.match(withImages, /<span class="mono-mark" style="--tile:/)
+  assert.match(renderWork({ ...data, images: { logos: { bigapp: 'img/logos/BigApp.webp' } } }), /logo-mark" src="\.\.\/assets\/img\/logos\/BigApp\.webp"/)
+  assert.ok(!home.includes('logo-mark'))
   assert.match(withImages, /class="shot" src="\.\/assets\/img\/shots\/BigApp\.png"/)
   assert.match(withImages, /class="thumb" src="\.\/assets\/img\/shots\/foo-kit\.png"/)
   assert.match(withImages, /og:image" content="https:\/\/example\.test\/site\/assets\/img\/og\.png"/)

@@ -123,6 +123,37 @@ export function wordmarkCells(text, { seed = 1, palette }) {
   return { cols: letters.length * (GLYPH_WIDTH + GLYPH_GAP) - GLYPH_GAP, rows: GLYPH_HEIGHT, cells }
 }
 
+// 判斷 repo 裡的某個檔案像不像這個專案的 logo。分數越高越像，0 以下就不用。
+// 只認名字明確是 logo / icon 的檔案：favicon 和框架附的預設圖（vite.svg 之類）太容易抓到不是自己的東西
+export function scoreLogoPath(path, size, repoName = '') {
+  const lower = path.toLowerCase()
+  const file = lower.slice(lower.lastIndexOf('/') + 1)
+  const dot = file.lastIndexOf('.')
+  if (dot <= 0) return 0
+  const ext = file.slice(dot + 1)
+  const stem = file.slice(0, dot)
+  if (!['png', 'webp', 'jpg', 'jpeg'].includes(ext)) return 0
+  if (/(^|\/)(node_modules|vendor|dist|build\/static|\.next|coverage|test|tests|__tests__|fixtures|examples?|screenshots?|samples?)\//.test(lower)) return 0
+  if (/^(vite|react|next|vercel|nuxt|svelte|astro|webpack|electron|tauri|github|placeholder)$/.test(stem)) return 0
+  if (/tray|badge|sprite|banner|cover|screenshot|preview|demo|qrcode|qr-|avatar|background|splash|og[-_.]|social/.test(stem)) return 0
+  if (size > 0 && size < 800) return 0 // 太小，多半是 16×16 的東西
+
+  const repo = repoName.toLowerCase()
+  let score = 0
+  if (stem === 'logo' || stem === `${repo}-logo` || stem === `${repo}_logo`) score = 100
+  else if (stem.includes('logo')) score = 85
+  else if (stem === 'icon' || stem === 'app-icon' || stem === 'appicon' || stem === `${repo}-icon`) score = 70
+  else if (/^icon[-_@]?(512|256|1024|192|128)/.test(stem) || /(512|256|1024)x\1/.test(stem)) score = 60
+  else if (stem === repo) score = 40
+  else return 0
+
+  if (/(^|[-_@x])(16|24|32|48)([-_@x.]|$)/.test(stem)) score -= 30
+  if (/dark|white|mono|small|mini/.test(stem)) score -= 8
+  score += { png: 10, webp: 8, jpg: 2, jpeg: 2 }[ext]
+  score -= (lower.split('/').length - 1) * 4 // 放得越深越不像是主要的 logo
+  return score
+}
+
 export function colorFor(name, palette) {
   let hash = 0
   for (const char of String(name)) hash = (hash * 31 + char.codePointAt(0)) >>> 0
