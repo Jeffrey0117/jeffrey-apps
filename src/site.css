@@ -311,6 +311,55 @@ p {
   }
 }
 
+/* 首頁主視覺（src/img/hero.*）：大卡橫跨整排，圖當底，文字放在左上的留白處。
+   圖是亮底，所以這張卡不跟著深色模式變色 */
+.hero.has-art {
+  --card: #fdfdfb;
+  --ink: #16140f;
+  --muted: #5f5a50;
+  --line: #d9d2c2;
+  color: var(--ink);
+  background-color: var(--card);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: auto 250px;
+  padding-bottom: 250px;
+}
+
+.hero.has-art .now {
+  background: color-mix(in srgb, var(--card) 85%, transparent);
+}
+
+@media (min-width: 760px) {
+  .hero.has-art {
+    background-size: cover;
+    padding-bottom: clamp(24px, 4vw, 40px);
+    min-height: 500px;
+    justify-content: center;
+  }
+
+  .hero.has-art h1,
+  .hero.has-art .lede {
+    max-width: 56%;
+  }
+}
+
+@media (min-width: 980px) {
+  .hero-grid:has(.hero.has-art) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto;
+  }
+
+  .hero-grid:has(.hero.has-art) .hero {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .hero-grid:has(.hero.has-art) .stat.ink {
+    grid-column: auto;
+  }
+}
+
 .lead.has-shot {
   padding-bottom: 0;
 }

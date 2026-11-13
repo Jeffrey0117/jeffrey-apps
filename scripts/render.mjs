@@ -220,7 +220,7 @@ ${band('intro')}
   <div class="wrap">
     <p class="eyebrow"><span>01</span>起點</p>
     <div class="hero-grid">
-      <div class="card hero">
+      <div class="card hero${images.hero ? ' has-art' : ''}"${images.hero ? ` style="background-image:url('${asset(images.hero)}')"` : ''}>
         ${latest ? `<a class="now" href="#recent"><i></i>最近在改 ${esc(latest.name)}</a>` : ''}
         <h1>${heroLines}</h1>
         <p class="lede">${esc(config.hero.intro)}</p>
@@ -228,7 +228,7 @@ ${band('intro')}
           <a class="btn primary" href="#work">看作品</a>
           ${config.links.github ? `<a class="btn" href="${esc(config.links.github)}" rel="noopener">${ICONS.github}GitHub</a>` : ''}
         </div>
-        ${cat('hero')}
+        ${images.hero ? '' : cat('hero')}
       </div>
       <a class="card stat ink with-avatar" href="./work/">
         <span class="label">公開的東西</span>
