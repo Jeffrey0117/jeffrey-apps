@@ -603,23 +603,20 @@ a.card:hover {
   font: 800 17px/1 var(--mono);
 }
 
-/* 頭貼：黑底上的馬賽克貓，直接融進墨色卡片 */
+/* 吉祥物：去背的貼紙，站在墨色卡片的右下角，下半身被卡片邊緣裁掉 */
 .with-avatar {
   position: relative;
   overflow: hidden;
-  padding-right: 150px;
-  min-height: 170px;
+  padding-right: 168px;
+  min-height: 190px;
 }
 
 .avatar {
   position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  image-rendering: pixelated;
+  right: 6px;
+  bottom: -26px;
+  width: auto;
+  height: 200px;
 }
 
 .more-link {

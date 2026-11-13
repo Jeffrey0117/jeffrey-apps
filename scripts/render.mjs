@@ -89,7 +89,7 @@ function layout({ config, root, title, description, active, body, asOf, images, 
 <meta property="og:type" content="website">
 ${ogTags}
 <meta name="color-scheme" content="light dark">
-${config.avatar ? `<link rel="icon" href="${root}assets/${esc(config.avatar)}">` : ''}
+${config.favicon || config.avatar ? `<link rel="icon" href="${root}assets/${esc(config.favicon || config.avatar)}">` : ''}
 <link rel="stylesheet" href="${root}assets/site.css${v}">
 <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -236,7 +236,7 @@ ${band('intro')}
         <span class="label">公開的東西</span>
         <span class="big">${summary.projects}<small>件</small></span>
         <span class="muted">${summary.byCategory.filter((c) => c.count > 0).slice(0, 4).map((c) => esc(c.label)).join('、')}</span>
-        ${config.avatar ? `<img class="avatar" src="./assets/${esc(config.avatar)}" alt="${esc(config.name ?? '')} 的頭貼：一隻彩色馬賽克貓" width="240" height="240">` : ''}
+        ${config.avatar ? `<img class="avatar" src="./assets/${esc(config.avatar)}" alt="${esc(config.name ?? '')} 的吉祥物">` : ''}
       </a>
       <div class="card stat">
         <span class="label">Kit</span>

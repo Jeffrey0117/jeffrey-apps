@@ -204,7 +204,7 @@
   "hideUntouchedBefore": "2025-08-01",
   "name": "htmlcat",
   "role": "切版職人",
-  "avatar": "avatar.jpg",
+  "avatar": "cat.webp",
   "palette": [
     "#ffd84d",
     "#ff9ec4",
@@ -219,5 +219,6 @@
   "poweredBy": {
     "label": "Classroo",
     "url": "https://classroo.tw"
-  }
+  },
+  "favicon": "favicon.png"
 }
