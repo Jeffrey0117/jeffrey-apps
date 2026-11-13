@@ -1,0 +1,360 @@
+// HTML 樣板。所有來自外部的文字都過 esc()。
+
+export const esc = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+const shortDate = (iso) => {
+  const date = new Date(iso)
+  return `${date.getUTCMonth() + 1}/${date.getUTCDate()}`
+}
+
+const ICONS = {
+  github:
+    '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>',
+  arrow:
+    '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  star:
+    '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="m12 2.5 2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8L12 2.5Z"/></svg>',
+  theme:
+    '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5-.04-.98-.12-1.45A6 6 0 0 1 12.45 3.12C12.3 3.04 12.15 3 12 3Z"/></svg>',
+}
+
+const stars = (count) => (count > 0 ? `<span class="stars">${ICONS.star}${count}</span>` : '')
+const mono = (name) => `<span class="mono-mark" aria-hidden="true">${esc([...name][0].toUpperCase())}</span>`
+
+function layout({ config, root, title, description, active, body, asOf }) {
+  const nav = [
+    { id: 'home', label: '首頁', href: `${root}` },
+    { id: 'work', label: '全部作品', href: `${root}work/` },
+  ]
+  const { github, email, instagram, threads } = config.links
+  const socials = [
+    github && `<a href="${esc(github)}" rel="noopener">GitHub</a>`,
+    instagram && `<a href="${esc(instagram)}" rel="noopener">Instagram</a>`,
+    threads && `<a href="${esc(threads)}" rel="noopener">Threads</a>`,
+    email && `<a href="mailto:${esc(email)}">Email</a>`,
+  ].filter(Boolean)
+
+  return `<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(description)}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(description)}">
+<meta property="og:type" content="website">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="${root}assets/site.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">跳至主要內容</a>
+<header class="topbar">
+  <a class="brand" href="${root}">${esc(config.brand)}</a>
+  <nav class="nav" aria-label="主選單">
+    ${nav.map((item) => `<a href="${item.href}"${item.id === active ? ' aria-current="page"' : ''}>${item.label}</a>`).join('\n    ')}
+    ${github ? `<a href="${esc(github)}" rel="noopener">GitHub</a>` : ''}
+  </nav>
+  <button class="theme-toggle" type="button" aria-label="切換深色模式">${ICONS.theme}</button>
+</header>
+<main id="main">
+${body}
+</main>
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div>
+      <div class="brand">${esc(config.brand)}</div>
+      <p class="muted">${esc(config.description)}</p>
+    </div>
+    <nav aria-label="頁尾">
+      <a href="${root}">首頁</a>
+      <a href="${root}work/">全部作品</a>
+      ${socials.join('\n      ')}
+    </nav>
+  </div>
+  <div class="wrap footer-note">
+    <span>數字截至 ${esc(asOf)}，由 GitHub 公開資料自動產生。</span>
+    <span>© ${new Date(asOf).getUTCFullYear()} ${esc(config.brand.replace(/\.$/, ''))}</span>
+  </div>
+</footer>
+<script src="${root}assets/site.js" defer></script>
+</body>
+</html>
+`
+}
+
+const sectionHead = (number, label, heading, extra = '') => `
+    <div class="section-head">
+      <div>
+        <p class="eyebrow"><span>${number}</span>${esc(label)}</p>
+        <h2>${heading}</h2>
+      </div>
+      ${extra}
+    </div>`
+
+function heatmap(activity) {
+  if (activity.cells.length === 0) return ''
+  const cells = activity.cells
+    .map((cell) => `<i class="lv${cell.level}" title="${esc(cell.date)}：${cell.count} 次"></i>`)
+    .join('')
+  return `<div class="heatmap" role="img" aria-label="${esc(shortDate(activity.from))} 到 ${esc(shortDate(activity.to))} 共 ${activity.total} 次更新">${cells}</div>`
+}
+
+function smallCard(project) {
+  return `<a class="card small" href="${esc(project.link)}" rel="noopener">
+        ${mono(project.name)}
+        <h3>${esc(project.name)}</h3>
+        <p>${esc(project.blurb)}</p>
+      </a>`
+}
+
+function listRows(projects) {
+  return projects
+    .map(
+      (project) => `<a class="row" href="${esc(project.link)}" rel="noopener">
+            ${mono(project.name)}
+            <span><strong>${esc(project.name)}</strong><span class="muted">${esc(project.blurb)}</span></span>
+          </a>`,
+    )
+    .join('\n          ')
+}
+
+export function renderHome(data) {
+  const { config, projects, summary, activity, updates, languages, asOf } = data
+  const find = (name) => projects.find((project) => project.name.toLowerCase() === String(name).toLowerCase())
+  const pick = (names) => (names ?? []).map(find).filter(Boolean)
+  const home = config.home
+  const lead = find(home.lead)
+  const dark = find(home.dark)
+  const trio = pick(home.trio?.repos)
+  const small = pick(home.small)
+  const kits = projects.filter((project) => project.category === 'kit')
+  const kitNames = pick(home.kitCard?.show).map((project) => project.name)
+  const infra = pick(home.list?.repos)
+  const latest = updates[0]
+  const categoryCount = (id) => summary.byCategory.find((category) => category.id === id)?.count ?? 0
+
+  const heroLines = config.hero.lines
+    .map((line, index) => (index === config.hero.accentLine ? `<span class="accent">${esc(line)}</span>` : esc(line)))
+    .join('<br>')
+
+  const stages = [
+    ['intro', '起點'],
+    ['work', '作品'],
+    ['recent', '最近'],
+    ['tools', '工具'],
+    ['contact', '聯絡'],
+  ]
+
+  const body = `
+<nav class="stage-index" aria-label="段落">
+  ${stages.map(([id, label], index) => `<a href="#${id}"><span>${index + 1}</span><em>${label}</em></a>`).join('\n  ')}
+</nav>
+
+<section id="intro" class="band band-intro">
+  <div class="wrap">
+    <p class="eyebrow"><span>01</span>起點</p>
+    <div class="hero-grid">
+      <div class="card hero">
+        ${latest ? `<a class="now" href="#recent"><i></i>最近在改 ${esc(latest.name)}</a>` : ''}
+        <h1>${heroLines}</h1>
+        <p class="lede">${esc(config.hero.intro)}</p>
+        <div class="actions">
+          <a class="btn primary" href="#work">看作品</a>
+          ${config.links.github ? `<a class="btn" href="${esc(config.links.github)}" rel="noopener">${ICONS.github}GitHub</a>` : ''}
+        </div>
+      </div>
+      <a class="card stat ink" href="./work/">
+        <span class="label">公開的東西</span>
+        <span class="big">${summary.projects}<small>件</small></span>
+        <span class="muted">${summary.byCategory.filter((c) => c.count > 0).slice(0, 4).map((c) => esc(c.label)).join('、')}</span>
+      </a>
+      <div class="card stat">
+        <span class="label">Kit</span>
+        <span class="big">${kits.length}<small>個</small></span>
+        <span class="muted">零依賴、可複用</span>
+      </div>
+      <div class="card stat">
+        <span class="label">GitHub 星星</span>
+        <span class="big">${summary.stars}</span>
+        <span class="muted">公開專案合計</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="work" class="band band-work">
+  <div class="wrap">${sectionHead('02', '作品', '挑幾個做過的東西，<br>給你看看。', `<a class="btn" href="./work/">全部 ${summary.projects} 件${ICONS.arrow}</a>`)}
+    <div class="bento">
+      ${
+        lead
+          ? `<a class="card lead" href="${esc(lead.link)}" rel="noopener">
+        <p class="label">桌面 App・開源</p>
+        <h3>${esc(lead.name)}</h3>
+        <p>${esc(lead.blurb)}</p>
+        <div class="meta">${stars(lead.stars)}<span class="chip">${esc(lead.language)}</span></div>
+        <div class="waveform" aria-hidden="true">${Array.from({ length: 36 }, (_, i) => `<i style="--h:${18 + Math.round(Math.abs(Math.sin(i * 0.9) * 60 + Math.cos(i * 0.37) * 22))}%"></i>`).join('')}</div>
+      </a>`
+          : ''
+      }
+      ${
+        dark
+          ? `<a class="card ink dark-card" href="${esc(dark.link)}" rel="noopener">
+        <p class="label">開源・GitHub</p>
+        <h3>${esc(dark.name)}</h3>
+        <p>${esc(dark.blurb)}</p>
+        <div class="meta">${stars(dark.stars)}<span class="chip">${esc(dark.language)}</span></div>
+      </a>`
+          : ''
+      }
+      ${small.map(smallCard).join('\n      ')}
+      <div class="card list-card">
+        <div class="list-head"><h3>${esc(home.trio.title)}</h3><span class="muted">${esc(home.trio.note)}</span></div>
+        <div class="rows">
+          ${listRows(trio)}
+        </div>
+      </div>
+      <div class="card list-card">
+        <div class="list-head"><h3>${esc(home.list.title)}</h3><span class="muted">${esc(home.list.note)}</span></div>
+        <div class="rows">
+          ${listRows(infra)}
+        </div>
+      </div>
+      <a class="card kit-card" href="./work/#kit">
+        <p class="label">${esc(home.kitCard.title)}</p>
+        <span class="big">${kits.length}<small>個 kit</small></span>
+        <p>${esc(home.kitCard.note)}</p>
+        <div class="chips">${kitNames.map((name) => `<span class="chip">${esc(name)}</span>`).join('')}<span class="chip more">+${Math.max(0, kits.length - kitNames.length)}</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="recent" class="band band-recent">
+  <div class="wrap">${sectionHead('03', '最近', '最近在忙什麼')}
+    <div class="recent-grid">
+      <div class="card">
+        <div class="list-head"><h3>開發日誌</h3><span class="muted">${activity.cells.length ? `${esc(shortDate(activity.from))} – ${esc(shortDate(activity.to))}・${activity.total} 次更新` : ''}</span></div>
+        ${heatmap(activity)}
+        <div class="rows log">
+          ${updates
+            .map(
+              (update) => `<a class="row" href="${esc(update.url)}" rel="noopener">
+            ${mono(update.name)}
+            <span><strong>${esc(update.name)}</strong><span class="muted">${esc(update.message)}</span></span>
+            <time datetime="${esc(update.date)}">${esc(shortDate(update.date))}</time>
+          </a>`,
+            )
+            .join('\n          ')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="list-head"><h3>依類型</h3><span class="muted">點了看全部</span></div>
+        <div class="rows">
+          ${summary.byCategory
+            .filter((category) => category.count > 0)
+            .map(
+              (category) => `<a class="row count-row" href="./work/#${esc(category.id)}">
+            <strong>${esc(category.label)}</strong>
+            <span class="num">${category.count}</span>
+          </a>`,
+            )
+            .join('\n          ')}
+        </div>
+      </div>
+      <div class="card stat-stack">
+        <div><span class="big">${categoryCount('app')}</span><span class="muted">個桌面 App</span></div>
+        <div><span class="big">${categoryCount('service')}</span><span class="muted">個自架服務</span></div>
+        <div><span class="big">${summary.stars}<i class="accent">${ICONS.star}</i></span><span class="muted">開源星星</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tools" class="band band-tools">
+  <div class="wrap">${sectionHead('04', '工具', '常用的工具，<br>和做事的方式')}
+    <div class="tools-grid">
+      <div class="card">
+        <h3>常用的語言</h3>
+        <p class="muted">依公開專案的主要語言統計</p>
+        <div class="chips big-chips">${languages.map((language) => `<span class="chip">${esc(language.name)}<b>${language.count}</b></span>`).join('')}</div>
+      </div>
+      <div class="card">
+        <h3>做事的方式</h3>
+        <ul class="principles">
+          <li><strong>自己架。</strong>儲存、資料庫、登入、驗證碼都有自架版本，不被平台綁住。</li>
+          <li><strong>抽成 kit。</strong>兩個專案都會用到的東西就抽出來，零依賴，改一次全部升級。</li>
+          <li><strong>本機優先。</strong>語音輸入、看圖看片都在自己的電腦上跑，不上雲。</li>
+          <li><strong>公開原始碼。</strong>做出來的東西大多放在 GitHub。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="band band-contact">
+  <div class="wrap">
+    <p class="eyebrow"><span>05</span>聯絡</p>
+    <div class="card contact">
+      <h2>${config.contact.lines.map(esc).join('<br>')}</h2>
+      <p class="lede">${esc(config.contact.note)}</p>
+      <div class="actions">
+        ${config.links.email ? `<a class="btn primary" href="mailto:${esc(config.links.email)}">${esc(config.links.email)}</a>` : ''}
+        ${config.links.github ? `<a class="btn${config.links.email ? '' : ' primary'}" href="${esc(config.links.github)}" rel="noopener">${ICONS.github}到 GitHub 找我</a>` : ''}
+        ${config.links.instagram ? `<a class="btn" href="${esc(config.links.instagram)}" rel="noopener">Instagram</a>` : ''}
+        ${config.links.threads ? `<a class="btn" href="${esc(config.links.threads)}" rel="noopener">Threads</a>` : ''}
+      </div>
+    </div>
+  </div>
+</section>`
+
+  return layout({ config, root: './', title: config.title, description: config.description, active: 'home', body, asOf })
+}
+
+export function renderWork(data) {
+  const { config, projects, summary, asOf } = data
+  const groups = summary.byCategory.filter((category) => category.count > 0)
+
+  const body = `
+<section class="band band-intro work-page">
+  <div class="wrap">
+    <p class="eyebrow"><span>全部</span>作品</p>
+    <h1 class="page-title">公開的 ${summary.projects} 件東西</h1>
+    <p class="lede">桌面 App、自架服務、kit、開發工具和瀏覽器腳本。每一件都連到原始碼或介紹頁。</p>
+    <div class="filters" role="group" aria-label="依類型篩選">
+      <button type="button" class="chip filter" data-filter="all" aria-pressed="true">全部<b>${summary.projects}</b></button>
+      ${groups.map((category) => `<button type="button" class="chip filter" data-filter="${esc(category.id)}" aria-pressed="false">${esc(category.label)}<b>${category.count}</b></button>`).join('\n      ')}
+    </div>
+    <p class="muted empty" hidden>這個類型目前沒有東西。</p>
+    <div class="wall">
+      ${projects
+        .map(
+          (project) => `<a class="card small wall-item" data-category="${esc(project.category)}" href="${esc(project.link)}" rel="noopener">
+        <div class="wall-top">${mono(project.name)}${stars(project.stars)}</div>
+        <h3>${esc(project.name)}</h3>
+        <p>${esc(project.blurb)}</p>
+        <div class="meta"><span class="chip">${esc(groups.find((category) => category.id === project.category)?.label ?? '')}</span>${project.language ? `<span class="chip">${esc(project.language)}</span>` : ''}</div>
+      </a>`,
+        )
+        .join('\n      ')}
+    </div>
+  </div>
+</section>`
+
+  return layout({
+    config,
+    root: '../',
+    title: `全部作品｜${config.brand.replace(/\.$/, '')}`,
+    description: `公開的 ${summary.projects} 件作品：桌面 App、自架服務、kit、開發工具與瀏覽器腳本。`,
+    active: 'work',
+    body,
+    asOf,
+  })
+}

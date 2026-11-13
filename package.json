@@ -1,0 +1,17 @@
+{
+  "name": "jeffrey-apps",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Jeffrey 的作品站：從 GitHub 公開資料產生的靜態網站",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:offline": "node scripts/build.mjs --offline",
+    "dev": "node scripts/build.mjs --offline && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

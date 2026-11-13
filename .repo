@@ -1,0 +1,12 @@
+{
+  "repo": 1,
+  "name": "jeffrey-apps",
+  "what": "我的作品站，給外人看我做過什麼；內容不手寫，build 時從我 GitHub 的公開資料自動產生。",
+  "kind": "tool",
+  "work": {
+    "guide": "README.md",
+    "run": "npm run dev",
+    "test": "npm test",
+    "build": "npm run build"
+  }
+}
