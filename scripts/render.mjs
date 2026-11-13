@@ -103,6 +103,9 @@ function layout({ config, root, title, description, active, body, asOf, images, 
 ${ogTags}
 <meta name="color-scheme" content="light dark">
 ${config.favicon || config.avatar ? `<link rel="icon" href="${root}assets/${esc(config.favicon || config.avatar)}">` : ''}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="${root}assets/site.css${v}">
 <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -280,15 +283,16 @@ ${band('intro')}
 </section>
 
 ${band('work')}
-  <div class="wrap">${sectionHead('02', '作品', '挑幾個做過的東西，<br>給你看看。', `<a class="btn" href="./work/">全部 ${summary.projects} 件${ICONS.arrow}</a>`)}
+  <div class="wrap">${sectionHead('02', '作品', '挑幾個<span class="hl">做過的東西</span>，<br>給你看看。', `<a class="btn" href="./work/">全部 ${summary.projects} 件${ICONS.arrow}</a>`)}
     <div class="bento">
       ${
         lead
           ? `<a class="card lead${shotOf(lead.name) ? ' has-shot' : ''}" href="${projectHref(lead.name)}">
-        <p class="label">桌面 App・開源</p>
-        <h3 class="with-logo">${logoOf(lead.name) ? mono(lead.name) : ''}${esc(lead.name)}</h3>
-        <p>${esc(lead.blurb)}</p>
-        <div class="meta">${stars(lead.stars)}<span class="chip">${esc(lead.language)}</span></div>
+        <div class="lead-text">
+          ${appHead(lead.name, '桌面 App・開源')}
+          <p>${esc(lead.blurb)}</p>
+          <div class="meta">${stars(lead.stars)}<span class="chip">${esc(lead.language)}</span></div>
+        </div>
         ${
           shotOf(lead.name)
             ? `<img class="shot" src="${shotOf(lead.name)}" alt="${esc(lead.name)} 的畫面" loading="lazy">`
@@ -300,8 +304,7 @@ ${band('work')}
       ${
         dark
           ? `<a class="card ink dark-card${cardArt(dark.name) ? ' has-art' : ''}" href="${projectHref(dark.name)}"${cardArt(dark.name) ? ` style="background-image:url('${cardArt(dark.name)}')"` : ''}>
-        <p class="label">開源・GitHub</p>
-        <h3 class="with-logo">${logoOf(dark.name) ? mono(dark.name) : ''}${esc(dark.name)}</h3>
+        ${appHead(dark.name, '開源・GitHub')}
         <p>${esc(dark.blurb)}</p>
         <div class="meta">${stars(dark.stars)}<span class="chip">${esc(dark.language)}</span></div>
       </a>`
@@ -331,7 +334,7 @@ ${band('work')}
 </section>
 
 ${band('recent')}
-  <div class="wrap">${sectionHead('03', '最近', '最近在忙什麼')}
+  <div class="wrap">${sectionHead('03', '最近', '<span class="hl">最近</span>在忙什麼')}
     <div class="recent-grid">
       <div class="card">
         <div class="list-head"><h3><a href="./devlog/">開發日誌</a></h3><span class="muted">${activity.cells.length ? `${esc(shortDate(activity.from))} – ${esc(shortDate(activity.to))}・${activity.total} 次更新` : ''}</span></div>
@@ -373,7 +376,7 @@ ${band('recent')}
 </section>
 
 ${band('tools')}
-  <div class="wrap">${sectionHead('04', '工具', '常用的工具，<br>和做事的方式')}
+  <div class="wrap">${sectionHead('04', '工具', '常用的<span class="hl">工具</span>，<br>和做事的方式')}
     <div class="tools-grid">
       <div class="card">
         <h3>常用的語言</h3>
@@ -597,6 +600,14 @@ export function renderAbout(data) {
     images: data.images,
     version: data.version,
   })
+}
+
+// 主打卡的抬頭：圖示在左，名稱和小標在右排成一列
+function appHead(name, sub) {
+  return `<div class="app-head">
+          ${mono(name)}
+          <div><h3>${esc(name)}</h3><p class="label">${esc(sub)}</p></div>
+        </div>`
 }
 
 // 作品牆上的一張卡。作品牆和作品介紹頁底下的「同類型」共用
