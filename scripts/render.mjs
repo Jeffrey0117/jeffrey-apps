@@ -209,6 +209,9 @@ export function renderHome(data) {
   const band = (id) => `<section id="${id}" class="band band-${id}">`
   const cat = (slot) =>
     images.cat[slot] ? `<img class="cat cat-${slot}" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
+  // 數字卡右下角的貼紙：src/img/cat-<名稱>.*，有檔案才出現
+  const sticker = (slot) =>
+    images.cat[slot] ? `<img class="sticker" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
   const shotOf = (name) => {
     const file = images.shots[String(name).toLowerCase()]
     return file ? asset(file) : ''
@@ -268,15 +271,17 @@ ${band('intro')}
         <span class="muted">${summary.byCategory.filter((c) => c.count > 0).slice(0, 4).map((c) => esc(c.label)).join('、')}</span>
         ${config.avatar ? `<img class="avatar" src="./assets/${esc(config.avatar)}" alt="${esc(config.name ?? '')} 的吉祥物">` : ''}
       </a>
-      <div class="card stat">
+      <div class="card stat${images.cat.kit ? ' with-sticker' : ''}">
         <span class="label">Kit</span>
         <span class="big">${kits.length}<small>個</small></span>
         <span class="muted">零依賴、可複用</span>
+        ${sticker('kit')}
       </div>
-      <div class="card stat">
+      <div class="card stat${images.cat.stars ? ' with-sticker' : ''}">
         <span class="label">GitHub 星星</span>
         <span class="big">${summary.stars}</span>
         <span class="muted">公開專案合計</span>
+        ${sticker('stars')}
       </div>
     </div>
   </div>

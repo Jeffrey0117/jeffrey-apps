@@ -571,6 +571,34 @@ a.card:hover {
   height: 200px;
 }
 
+/* 數字卡右下角的貼紙（src/img/cat-kit.*、cat-stars.*） */
+.with-sticker {
+  position: relative;
+  overflow: hidden;
+  padding-right: 128px;
+  min-height: 176px;
+}
+
+.sticker {
+  position: absolute;
+  right: 4px;
+  bottom: -14px;
+  width: auto;
+  height: 158px;
+  pointer-events: none;
+}
+
+/* 中間寬度三張並排會擠到貼紙，改成大卡一整排、兩張小卡各半 */
+@media (min-width: 620px) and (max-width: 1139px) {
+  .hero-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .hero-grid .stat.ink {
+    grid-column: 1 / -1 !important;
+  }
+}
+
 .more-link {
   display: inline-flex;
   align-items: center;
