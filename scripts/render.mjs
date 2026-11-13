@@ -48,10 +48,16 @@ const stars = (count) => (count > 0 ? `<span class="stars">${ICONS.star}${count}
 // logoMap 與 assetBase 由每個 render 函式一開始用 useLogos() 設定（各頁的相對路徑不同）
 let logoMap = {}
 let assetBase = './assets/'
-function useLogos(data, base) {
+// workBase：從目前這一頁走到 /work/ 的相對路徑，用來組每個作品介紹頁的連結
+let workBase = './work/'
+function useLogos(data, base, work = './work/') {
   logoMap = data.images?.logos ?? {}
   assetBase = base
+  workBase = work
 }
+
+// 站內的作品連結一律先到作品介紹頁，不直接跳去 GitHub
+const projectHref = (name) => `${workBase}${encodeURIComponent(name)}/`
 
 const logoOf = (name) => {
   const file = logoMap[String(name).toLowerCase()]
@@ -157,7 +163,7 @@ function heatmap(activity) {
 }
 
 function smallCard(project, thumb = '') {
-  return `<a class="card small${thumb ? ' has-thumb' : ''}" href="${esc(project.link)}" rel="noopener">
+  return `<a class="card small${thumb ? ' has-thumb' : ''}" href="${projectHref(project.name)}">
         ${thumb ? `<img class="thumb" src="${thumb}" alt="" loading="lazy">` : ''}
         ${mono(project.name)}
         <h3>${esc(project.name)}</h3>
@@ -168,7 +174,7 @@ function smallCard(project, thumb = '') {
 function listRows(projects) {
   return projects
     .map(
-      (project) => `<a class="row" href="${esc(project.link)}" rel="noopener">
+      (project) => `<a class="row" href="${projectHref(project.name)}">
             ${mono(project.name)}
             <span><strong>${esc(project.name)}</strong><span class="muted">${esc(project.blurb)}</span></span>
           </a>`,
@@ -259,7 +265,7 @@ ${band('work')}
     <div class="bento">
       ${
         lead
-          ? `<a class="card lead${shotOf(lead.name) ? ' has-shot' : ''}" href="${esc(lead.link)}" rel="noopener">
+          ? `<a class="card lead${shotOf(lead.name) ? ' has-shot' : ''}" href="${projectHref(lead.name)}">
         <p class="label">桌面 App・開源</p>
         <h3 class="with-logo">${logoOf(lead.name) ? mono(lead.name) : ''}${esc(lead.name)}</h3>
         <p>${esc(lead.blurb)}</p>
@@ -274,7 +280,7 @@ ${band('work')}
       }
       ${
         dark
-          ? `<a class="card ink dark-card" href="${esc(dark.link)}" rel="noopener">
+          ? `<a class="card ink dark-card" href="${projectHref(dark.name)}">
         <p class="label">開源・GitHub</p>
         <h3 class="with-logo">${logoOf(dark.name) ? mono(dark.name) : ''}${esc(dark.name)}</h3>
         <p>${esc(dark.blurb)}</p>
@@ -314,7 +320,7 @@ ${band('recent')}
         <div class="rows log">
           ${updates
             .map(
-              (update) => `<a class="row" href="${esc(update.url)}" rel="noopener">
+              (update) => `<a class="row" href="${projectHref(update.name)}">
             ${mono(update.name)}
             <span><strong>${esc(update.name)}</strong><span class="muted">${esc(update.message)}</span></span>
             <time datetime="${esc(update.date)}">${esc(shortDate(update.date))}</time>
@@ -391,7 +397,7 @@ ${band('contact')}
 export function renderDevlog(data) {
   const { config, log, activityLong, asOf } = data
   palette = paletteOf(config)
-  useLogos(data, '../assets/')
+  useLogos(data, '../assets/', '../work/')
   const days = groupByDay(log)
   const dayLabel = (iso) => {
     const date = new Date(`${iso}T00:00:00Z`)
@@ -418,7 +424,7 @@ export function renderDevlog(data) {
       <div class="card rows log">
         ${day.entries
           .map(
-            (entry) => `<a class="row" href="${esc(entry.url)}" rel="noopener">
+            (entry) => `<a class="row" href="${projectHref(entry.name)}">
           ${mono(entry.name)}
           <span><strong>${esc(entry.name)}</strong><span class="muted">${esc(entry.message)}</span></span>
         </a>`,
@@ -445,10 +451,103 @@ export function renderDevlog(data) {
   })
 }
 
+// 作品牆上的一張卡。作品牆和作品介紹頁底下的「同類型」共用
+function wallCard(project, groups) {
+  return `<a class="card small wall-item" data-category="${esc(project.category)}" href="${projectHref(project.name)}">
+        <div class="wall-top">${mono(project.name)}${stars(project.stars)}</div>
+        <h3>${esc(project.name)}</h3>
+        <p>${esc(project.blurb)}</p>
+        <div class="meta"><span class="chip">${esc(groups.find((category) => category.id === project.category)?.label ?? '')}</span>${project.language ? `<span class="chip">${esc(project.language)}</span>` : ''}</div>
+      </a>`
+}
+
+// 單一作品的介紹頁：/work/<專案名>/。
+// article 是 content/<專案名>.md 轉好的 HTML（由 build 提供，已經過跳脫），沒有就不顯示那一塊
+export function renderProject(data, project) {
+  const { config, projects, summary, log, asOf } = data
+  palette = paletteOf(config)
+  useLogos(data, '../../assets/', '../')
+  const groups = summary.byCategory.filter((category) => category.count > 0)
+  const category = groups.find((item) => item.id === project.category)
+  const key = project.name.toLowerCase()
+  const article = data.articles?.[key] ?? ''
+  const shot = data.images?.shots?.[key]
+  const updates = (log ?? []).filter((entry) => entry.name === project.name).slice(0, 8)
+  const related = projects.filter((other) => other.category === project.category && other.name !== project.name).slice(0, 3)
+  // 中英文之間留一個空格：「更多 Kit」「更多桌面 App」
+  const moreLabel = category ? `更多${/^[A-Za-z]/.test(category.label) ? ' ' : ''}${esc(category.label)}` : '更多作品'
+
+  const body = `
+<section class="band band-intro project-page">
+  <div class="wrap narrow">
+    <nav class="crumbs" aria-label="所在位置"><a href="../">全部作品</a><span aria-hidden="true">/</span>${category ? `<a href="../#${esc(category.id)}">${esc(category.label)}</a><span aria-hidden="true">/</span>` : ''}<span>${esc(project.name)}</span></nav>
+    <div class="card project-head">
+      <div class="project-title">
+        ${mono(project.name)}
+        <div>
+          <h1 class="page-title">${esc(project.name)}</h1>
+          ${project.blurb ? `<p class="lede">${esc(project.blurb)}</p>` : ''}
+        </div>
+      </div>
+      <div class="meta">
+        ${stars(project.stars)}
+        ${category ? `<span class="chip">${esc(category.label)}</span>` : ''}
+        ${project.language ? `<span class="chip">${esc(project.language)}</span>` : ''}
+        <span class="chip">最後更新 ${esc(project.pushedAt.slice(0, 10))}</span>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="${esc(project.url)}" rel="noopener">${ICONS.github}看原始碼</a>
+        ${project.homepage ? `<a class="btn" href="${esc(project.homepage)}" rel="noopener">官方介紹頁${ICONS.arrow}</a>` : ''}
+      </div>
+      <p class="muted readme-note">安裝方式和完整用法寫在 <a href="${esc(project.url)}#readme" rel="noopener">GitHub 的 README</a>。</p>
+    </div>
+    ${shot ? `<img class="project-shot" src="${assetBase}${esc(shot)}" alt="${esc(project.name)} 的畫面" loading="lazy">` : ''}
+    ${article ? `<article class="card prose">\n${article}\n</article>` : ''}
+    ${
+      updates.length
+        ? `<div class="card">
+      <div class="list-head"><h2 class="card-title">最近更新</h2><a class="muted" href="${esc(project.url)}/commits" rel="noopener">全部紀錄</a></div>
+      <div class="rows log">
+        ${updates
+          .map(
+            (entry) => `<div class="row">
+          <span><span>${esc(entry.message)}</span></span>
+          <time datetime="${esc(entry.date)}">${esc(shortDate(entry.date))}</time>
+        </div>`,
+          )
+          .join('\n        ')}
+      </div>
+    </div>`
+        : ''
+    }
+    ${
+      related.length
+        ? `<h2 class="day-title related-title">${moreLabel}</h2>
+    <div class="wall related">
+      ${related.map((other) => wallCard(other, groups)).join('\n      ')}
+    </div>`
+        : ''
+    }
+  </div>
+</section>`
+
+  return layout({
+    config,
+    root: '../../',
+    title: `${project.name}｜${config.name ?? config.brand}`,
+    description: project.blurb || `${project.name}：${config.name ?? ''} 的作品。`,
+    active: 'work',
+    body,
+    asOf,
+    images: data.images,
+    version: data.version,
+  })
+}
+
 export function renderWork(data) {
   const { config, projects, summary, asOf } = data
   palette = paletteOf(config)
-  useLogos(data, '../assets/')
+  useLogos(data, '../assets/', './')
   const groups = summary.byCategory.filter((category) => category.count > 0)
 
   const body = `
@@ -456,23 +555,14 @@ export function renderWork(data) {
   <div class="wrap">
     <p class="eyebrow"><span>全部</span>作品</p>
     <h1 class="page-title">公開的 ${summary.projects} 件東西</h1>
-    <p class="lede">桌面 App、自架服務、kit、開發工具和瀏覽器腳本。每一件都連到原始碼或介紹頁。</p>
+    <p class="lede">桌面 App、自架服務、kit、開發工具和瀏覽器腳本。點進去看每一件的介紹。</p>
     <div class="filters" role="group" aria-label="依類型篩選">
       <button type="button" class="chip filter" data-filter="all" aria-pressed="true">全部<b>${summary.projects}</b></button>
       ${groups.map((category) => `<button type="button" class="chip filter" data-filter="${esc(category.id)}" aria-pressed="false">${esc(category.label)}<b>${category.count}</b></button>`).join('\n      ')}
     </div>
     <p class="muted empty" hidden>這個類型目前沒有東西。</p>
     <div class="wall">
-      ${projects
-        .map(
-          (project) => `<a class="card small wall-item" data-category="${esc(project.category)}" href="${esc(project.link)}" rel="noopener">
-        <div class="wall-top">${mono(project.name)}${stars(project.stars)}</div>
-        <h3>${esc(project.name)}</h3>
-        <p>${esc(project.blurb)}</p>
-        <div class="meta"><span class="chip">${esc(groups.find((category) => category.id === project.category)?.label ?? '')}</span>${project.language ? `<span class="chip">${esc(project.language)}</span>` : ''}</div>
-      </a>`,
-        )
-        .join('\n      ')}
+      ${projects.map((project) => wallCard(project, groups)).join('\n      ')}
     </div>
   </div>
 </section>`

@@ -541,6 +541,214 @@ a.card:hover {
   color: var(--accent);
 }
 
+/* ── 作品介紹頁 ───────────────────────────────────── */
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.crumbs a:hover {
+  color: var(--accent);
+}
+
+.crumbs span:last-child {
+  color: var(--ink);
+}
+
+.project-page .card,
+.project-shot {
+  margin-top: 18px;
+}
+
+.project-page .card:first-of-type {
+  margin-top: 0;
+}
+
+.project-head {
+  gap: 16px;
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.project-title {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.project-title .mono-mark {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  font-size: 28px;
+}
+
+.project-title .page-title {
+  font-size: clamp(28px, 4.5vw, 40px);
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+
+.project-head .meta {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.project-shot {
+  display: block;
+  width: min(560px, 100%);
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.card-title {
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.project-page .log .row > span {
+  flex-direction: row;
+}
+
+.related-title {
+  margin-top: 34px;
+}
+
+.wall.related {
+  margin-top: 12px;
+}
+
+/* 卡片之間的上間距是給直排的大卡用的；格狀排列的小卡不要，不然第一張會跟別張錯位 */
+.project-page .wall .card {
+  margin-top: 0;
+}
+
+.readme-note {
+  font-size: 13.5px;
+}
+
+.readme-note a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.readme-note a:hover {
+  color: var(--accent);
+}
+
+/* 文章內文（content/*.md 轉出來的） */
+.prose {
+  display: block;
+  padding: clamp(22px, 4vw, 34px);
+  font-size: 16.5px;
+  line-height: 1.85;
+}
+
+.prose > * + * {
+  margin-top: 1em;
+}
+
+.prose p {
+  color: var(--ink);
+  font-size: inherit;
+}
+
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5 {
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  margin-top: 1.7em;
+}
+
+.prose h2 {
+  font-size: 24px;
+  padding-left: 12px;
+  border-left: 4px solid var(--accent);
+}
+
+.prose h3 {
+  font-size: 19px;
+}
+
+.prose h4,
+.prose h5 {
+  font-size: 16.5px;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+.prose li + li {
+  margin-top: 0.35em;
+}
+
+.prose blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--line);
+}
+
+.prose blockquote p {
+  color: var(--muted);
+}
+
+.prose code {
+  font: 0.88em var(--mono);
+  background: var(--paper-2);
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.prose pre {
+  background: var(--band-dark);
+  color: var(--band-dark-ink);
+  padding: 16px 18px;
+  border-radius: 12px;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: 14px;
+}
+
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 2em 0;
+}
+
 /* ── 開發日誌頁 ───────────────────────────────────── */
 .devlog-page .card {
   margin-top: 22px;

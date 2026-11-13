@@ -8,7 +8,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fetchContributionDays, fetchRecentCommits, fetchRepos, findToken } from './github.mjs'
 import { buildLog, buildProjects, languageCounts, latestPerRepo, recentActivity, summarize } from './model.mjs'
-import { renderDevlog, renderHome, renderWork } from './render.mjs'
+import { renderMarkdown } from './markdown.mjs'
+import { renderDevlog, renderHome, renderProject, renderWork } from './render.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = join(root, 'dist')
@@ -86,6 +87,28 @@ function assetVersion() {
   return hash.digest('hex').slice(0, 10)
 }
 
+// 作品介紹文章：content/<專案名>.md。檔名（不分大小寫）要跟 GitHub 的 repo 名稱一樣。
+// 底線開頭的檔案（例如 _說明.md）不是文章，略過。文章裡的圖放 content/img/，寫成 ![說明](img/檔名)
+function loadArticles(projects) {
+  const dir = join(root, 'content')
+  const articles = {}
+  if (!existsSync(dir)) return articles
+  const known = new Set(projects.map((project) => project.name.toLowerCase()))
+  for (const file of readdirSync(dir)) {
+    if (!/\.md$/i.test(file) || file.startsWith('_')) continue
+    const key = file.replace(/\.md$/i, '').toLowerCase()
+    if (!known.has(key)) {
+      console.warn(`content/${file} 對不上任何公開作品，沒有用到（檔名要跟 repo 名稱一樣）`)
+      continue
+    }
+    const html = renderMarkdown(readFileSync(join(dir, file), 'utf8'), {
+      resolveImage: (src) => (/^img\//.test(src) ? `../../assets/content/${src.slice(4)}` : src),
+    })
+    if (html) articles[key] = html
+  }
+  return articles
+}
+
 const raw = await loadRaw()
 const projects = buildProjects(raw.repos, config)
 const asOf = raw.fetchedAt.slice(0, 10)
@@ -100,6 +123,7 @@ const data = {
   log,
   languages: languageCounts(projects),
   images: findImages(),
+  articles: loadArticles(projects),
   version: assetVersion(),
   asOf,
 }
@@ -110,8 +134,18 @@ cpSync(join(root, 'src'), join(dist, 'assets'), { recursive: true })
 writeFileSync(join(dist, 'index.html'), renderHome(data), 'utf8')
 writeFileSync(join(dist, 'work', 'index.html'), renderWork(data), 'utf8')
 writeFileSync(join(dist, 'devlog', 'index.html'), renderDevlog(data), 'utf8')
+
+// 每個作品一頁：/work/<專案名>/
+for (const project of projects) {
+  const dir = join(dist, 'work', project.name)
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'index.html'), renderProject(data, project), 'utf8')
+}
+const contentImages = join(root, 'content', 'img')
+if (existsSync(contentImages)) cpSync(contentImages, join(dist, 'assets', 'content'), { recursive: true })
 writeFileSync(join(dist, '.nojekyll'), '', 'utf8')
 
 const { cat, shots, logos, og, hero, contact } = data.images
 console.log(`圖片：${hero ? '首頁主視覺 1、' : ''}${contact ? '聯絡卡 1、' : ''}專案 logo ${Object.keys(logos).length}、吉祥物 ${Object.keys(cat).length}、截圖 ${Object.keys(shots).length}${og ? '、分享圖 1' : ''}`)
+console.log(`作品介紹頁 ${projects.length} 頁，其中 ${Object.keys(data.articles).length} 頁有文章`)
 console.log(`完成：${projects.length} 件作品、${data.summary.stars} 顆星、資料時間 ${asOf}${offline ? '（離線）' : ''}`)

@@ -4,7 +4,7 @@ import {
   buildLog, buildProjects, categorize, cleanText, colorFor, groupByDay, isSafeText, isVisible, languageCounts,
   latestPerRepo, recentActivity, scoreLogoPath, seededRandom, summarize, toProject, wordmarkCells,
 } from '../scripts/model.mjs'
-import { esc, renderDevlog, renderHome, renderWork } from '../scripts/render.mjs'
+import { esc, renderDevlog, renderHome, renderProject, renderWork } from '../scripts/render.mjs'
 
 const config = {
   user: 'someone',
@@ -228,6 +228,34 @@ test('pages render the data and escape anything that came from outside', () => {
   const branded = renderHome({ ...data, config: { ...config, wordmark: 'CAT', poweredBy: { label: 'Maker', url: 'https://maker.example' } } })
   assert.match(branded, /<svg class="wordmark"[^>]*aria-label="CAT"/)
   assert.match(branded, /Powered by <a class="powered" href="https:\/\/maker\.example" rel="noopener">Maker<\/a>/)
+
+  // 站內的作品連結一律到作品介紹頁，不直接跳 GitHub；各頁的相對路徑不同
+  assert.match(home, /class="card lead" href="\.\/work\/BigApp\/"/)
+  assert.match(home, /class="row" href="\.\/work\/BigApp\/"/)
+  assert.match(work, /class="card small wall-item" data-category="app" href="\.\/BigApp\/"/)
+  assert.match(devlog, /class="row" href="\.\.\/work\/foo-kit\/"/)
+  assert.ok(!work.includes('href="https://github.com/someone/BigApp"'))
+
+  // 作品介紹頁：資訊、原始碼按鈕、這個專案的更新、同類型的其他作品；有文章才出現文章區
+  const bigApp = projects.find((project) => project.name === 'BigApp')
+  const page = renderProject(data, bigApp)
+  assert.match(page, /<h1 class="page-title">BigApp<\/h1>/)
+  assert.match(page, /自訂說明/)
+  assert.match(page, /class="btn primary" href="https:\/\/github\.com\/someone\/BigApp" rel="noopener"/)
+  assert.match(page, /最後更新 2026-11-01/)
+  assert.match(page, /feat: &quot;quoted&quot; &lt;b&gt;/)
+  assert.ok(!page.includes('fix: edge case')) // 別的專案的更新不會跑進來
+  assert.match(page, /href="\.\.\/\.\.\/assets\/site\.css"/)
+  assert.match(page, /href="\.\.\/">全部作品<\/a>/)
+  assert.ok(!page.includes('class="card prose"'))
+
+  const kit = projects.find((project) => project.name === 'foo-kit')
+  const withArticle = renderProject({ ...data, articles: { 'foo-kit': '<h2>為什麼做</h2>\n<p>內文</p>' } }, kit)
+  assert.match(withArticle, /<article class="card prose">\s*<h2>為什麼做<\/h2>/)
+  assert.ok(!withArticle.includes('更多 Kit')) // 同類型只有它自己，就不顯示那一區
+  assert.match(withArticle, /href="https:\/\/github\.com\/someone\/foo-kit#readme"/)
+  const tool = projects.find((project) => project.name === 'cli-thing')
+  assert.match(renderProject(data, tool), /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
 
   // 圖片插槽：沒圖時什麼都不多；有圖時背景、吉祥物、截圖、分享圖各就各位
   assert.ok(!home.includes('has-bg') && !home.includes('class="cat') && !home.includes('og:image'))
