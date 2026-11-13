@@ -92,24 +92,6 @@ export function seededRandom(seed) {
   }
 }
 
-// 蠟筆鋸齒邊的輪廓：一高一低交替的折線，像蠟筆斜斜地來回塗。
-// 高點落在上半、低點落在下半，每一筆往右斜一點；底邊（y = height）由呼叫端補上
-export function scribblePoints({ seed = 1, width = 1600, height = 64 } = {}) {
-  const random = seededRandom(seed)
-  const points = []
-  let x = 0
-  let high = true
-  while (x < width) {
-    const y = high ? 2 + random() * height * 0.42 : height * 0.5 + random() * height * 0.38
-    points.push([Math.round(x), Math.round(y)])
-    // 往上的一筆短、往下的一筆長，筆觸才會斜
-    x += high ? 5 + random() * 7 : 9 + random() * 13
-    high = !high
-  }
-  points.push([width, Math.round(height * 0.6)])
-  return { width, height, points }
-}
-
 // 5×7 的點陣字。文字標誌用它一格一格拼出來，每格上不同的顏色
 const GLYPHS = {
   A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],

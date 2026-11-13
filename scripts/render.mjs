@@ -1,6 +1,6 @@
 // HTML 樣板。所有來自外部的文字都過 esc()。
 
-import { colorFor, groupByDay, scribblePoints, wordmarkCells } from './model.mjs'
+import { colorFor, groupByDay, wordmarkCells } from './model.mjs'
 
 const DEFAULT_PALETTE = ['#ffd84d', '#ff9ec4', '#7fd4ff', '#8be3b0', '#ffb067', '#c9a6ff', '#fff3c4']
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
@@ -17,14 +17,6 @@ function brandMark(config) {
     .map((c) => `<rect x="${c.col * cell}" y="${c.row * cell}" width="${cell}" height="${cell}" fill="${esc(c.color)}"/>`)
     .join('')
   return `<svg class="wordmark" viewBox="0 0 ${cols * cell} ${rows * cell}" shape-rendering="crispEdges" role="img" aria-label="${esc(config.wordmark)}">${rects}</svg>`
-}
-
-// 蠟筆鋸齒邊：放在暗色段落的最上面、往上凸出去蓋住上一段的底部，
-// 亮轉暗的交界就不是一條直線，而是像蠟筆來回塗出來的邊
-function scribbleEdge(seed) {
-  const { width, height, points } = scribblePoints({ seed })
-  const path = `M0 ${height} ${points.map(([x, y]) => `L${x} ${y}`).join(' ')} L${width} ${height} Z`
-  return `<svg class="scribble" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}" fill="currentColor"/></svg>`
 }
 
 export const esc = (value) =>
@@ -171,14 +163,10 @@ function listRows(projects) {
 export function renderHome(data) {
   const { config, projects, summary, activity, updates, languages, asOf } = data
   palette = paletteOf(config)
-  const images = data.images ?? { bg: {}, cat: {}, shots: {}, og: '' }
+  const images = data.images ?? { cat: {}, shots: {}, og: '' }
   const asset = (path) => `./assets/${esc(path)}`
-  // 有背景圖的段落：圖的上段貼在段落上緣、下段貼在下緣，中間留白放卡片。
-  // 路徑刻意寫成相對於樣式表（assets/site.css）：CSS 變數裡的網址是以樣式表的位置解析的
-  const band = (id) => {
-    const bg = images.bg[id]
-    return `<section id="${id}" class="band band-${id}${bg ? ' has-bg' : ''}"${bg ? ` style="--bg:url('${esc(bg)}')"` : ''}>`
-  }
+  // 段落一律同一個紙色底，不鋪背景圖（試過，比素底醜，而且底色會跳）。圖只放在卡片裡
+  const band = (id) => `<section id="${id}" class="band band-${id}">`
   const cat = (slot) =>
     images.cat[slot] ? `<img class="cat cat-${slot}" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
   const shotOf = (name) => {
@@ -205,8 +193,8 @@ export function renderHome(data) {
   const stages = [
     ['intro', '起點'],
     ['work', '作品'],
-    ['tools', '工具'],
     ['recent', '最近'],
+    ['tools', '工具'],
     ['contact', '聯絡'],
   ]
 
@@ -300,30 +288,8 @@ ${band('work')}
   </div>
 </section>
 
-${band('tools')}
-  <div class="wrap">${sectionHead('03', '工具', '常用的工具，<br>和做事的方式')}
-    <div class="tools-grid">
-      <div class="card">
-        <h3>常用的語言</h3>
-        <p class="muted">依公開專案的主要語言統計</p>
-        <div class="chips big-chips">${languages.map((language) => `<span class="chip">${esc(language.name)}<b>${language.count}</b></span>`).join('')}</div>
-      </div>
-      <div class="card">
-        <h3>做事的方式</h3>
-        <ul class="principles">
-          <li><strong>自己架。</strong>儲存、資料庫、登入、驗證碼都有自架版本，不被平台綁住。</li>
-          <li><strong>抽成 kit。</strong>兩個專案都會用到的東西就抽出來，零依賴，改一次全部升級。</li>
-          <li><strong>本機優先。</strong>語音輸入、看圖看片都在自己的電腦上跑，不上雲。</li>
-          <li><strong>公開原始碼。</strong>做出來的東西大多放在 GitHub。</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
 ${band('recent')}
-  ${scribbleEdge(29)}
-  <div class="wrap">${sectionHead('04', '最近', '最近在忙什麼')}
+  <div class="wrap">${sectionHead('03', '最近', '最近在忙什麼')}
     <div class="recent-grid">
       <div class="card">
         <div class="list-head"><h3><a href="./devlog/">開發日誌</a></h3><span class="muted">${activity.cells.length ? `${esc(shortDate(activity.from))} – ${esc(shortDate(activity.to))}・${activity.total} 次更新` : ''}</span></div>
@@ -359,6 +325,27 @@ ${band('recent')}
         <div><span class="big">${categoryCount('app')}</span><span class="muted">個桌面 App</span></div>
         <div><span class="big">${categoryCount('service')}</span><span class="muted">個自架服務</span></div>
         <div><span class="big">${summary.stars}<i class="accent">${ICONS.star}</i></span><span class="muted">開源星星</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+${band('tools')}
+  <div class="wrap">${sectionHead('04', '工具', '常用的工具，<br>和做事的方式')}
+    <div class="tools-grid">
+      <div class="card">
+        <h3>常用的語言</h3>
+        <p class="muted">依公開專案的主要語言統計</p>
+        <div class="chips big-chips">${languages.map((language) => `<span class="chip">${esc(language.name)}<b>${language.count}</b></span>`).join('')}</div>
+      </div>
+      <div class="card">
+        <h3>做事的方式</h3>
+        <ul class="principles">
+          <li><strong>自己架。</strong>儲存、資料庫、登入、驗證碼都有自架版本，不被平台綁住。</li>
+          <li><strong>抽成 kit。</strong>兩個專案都會用到的東西就抽出來，零依賴，改一次全部升級。</li>
+          <li><strong>本機優先。</strong>語音輸入、看圖看片都在自己的電腦上跑，不上雲。</li>
+          <li><strong>公開原始碼。</strong>做出來的東西大多放在 GitHub。</li>
+        </ul>
       </div>
     </div>
   </div>

@@ -214,31 +214,8 @@ p {
   padding: 56px 0 72px;
 }
 
-/* 蠟筆鋸齒邊：暗色段落往上凸出去，蓋住上一段的底部，亮轉暗的交界不是一條直線。
-   顏色跟著所在段落的底色（currentColor）；往下多蓋 1px 免得出現細縫 */
-.scribble {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -43px;
-  width: 100%;
-  height: 44px;
-  display: block;
-  pointer-events: none;
-  z-index: 2;
-  color: var(--band-dark);
-}
-
-.band-recent.has-bg > .scribble {
-  color: #110f19;
-}
-
-/* 首頁第一段有主視覺時用跟圖一樣的白，往下接作品區才不會有色差；
-   導覽列浮在 body 上，所以 body 也要同一個白 */
-.band-intro:has(.hero.has-art),
-body:has(.hero.has-art) {
-  background-color: #fdfdfb;
-}
+/* 每一段都是同一個紙色底，不換色、不鋪背景圖。
+   （試過段落背景圖和明暗交替：比素底醜，而且整頁底色一直跳。圖只放在卡片裡。） */
 
 .wrap {
   position: relative;
@@ -246,81 +223,6 @@ body:has(.hero.has-art) {
 }
 
 /* ── 圖片插槽（src/img/ 有圖才會生效）──────────────── */
-/* 段落背景圖（1536×1024，上下有畫、中間留白）：
-   上緣露出圖最上面 28%，下緣露出最下面 45%，各自跟著螢幕寬度縮放；中間是純色，放卡片。
-   這樣段落多高都不會裁到圖裡的角色。--bg 的路徑相對於這支樣式表。 */
-.band.has-bg {
-  --art-top: 21vw; /* 圖高 (100vw × 2/3) 的 31.5% */
-  --art-bottom: 32vw; /* 圖高的 48% */
-  padding-top: calc(var(--art-top) * 0.8);
-  padding-bottom: calc(var(--art-bottom) + 12px);
-}
-
-.band.has-bg::before,
-.band.has-bg::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  background-image: var(--bg);
-  background-repeat: no-repeat;
-  background-size: 100% auto;
-  pointer-events: none;
-}
-
-.band.has-bg::before {
-  top: 0;
-  height: var(--art-top);
-  background-position: center top;
-  mask-image: linear-gradient(to bottom, #000 88%, transparent);
-}
-
-.band.has-bg::after {
-  bottom: 0;
-  height: var(--art-bottom);
-  background-position: center bottom;
-  mask-image: linear-gradient(to top, #000 86%, transparent);
-}
-
-/* 暗底的圖是偏紫的黑（取樣約 #110f19），段落和卡片跟著它走，接縫才看不出來 */
-.band-recent.has-bg,
-.band-contact.has-bg {
-  background-color: #110f19;
-  --card: #1c1927;
-  --line: #332f43;
-  --paper-2: #332f43;
-  --muted: #aaa4bd;
-}
-
-/* 亮底的圖配亮底的段落，接縫才看不出來 */
-.band-intro.has-bg,
-.band-work.has-bg,
-.band-tools.has-bg {
-  background-color: #fdfdfb;
-}
-
-/* 標題直接壓在圖上會看不清楚，墊一塊底 */
-.has-bg .section-head h2,
-.has-bg .page-title {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 8px 16px;
-  display: block;
-  width: fit-content;
-}
-
-.has-bg .section-head .btn {
-  background: var(--card);
-  color: var(--ink);
-}
-
-.has-bg .eyebrow {
-  background: var(--band-dark);
-  color: var(--band-dark-ink);
-  padding: 4px 10px 4px 4px;
-  border-radius: 8px;
-}
 
 .cat {
   position: absolute;
@@ -411,11 +313,7 @@ body:has(.hero.has-art) {
 }
 
 /* 聯絡卡的底圖（src/img/contact.*）：暗底，角色在右半邊，文字放左上的留白。
-   圖的底色取樣約 #161318，卡片和整段跟著它，接縫才看不出來 */
-.band-contact:has(.contact.has-art) {
-  background-color: #110f19; /* 跟上一段（最近）同一個紫黑，兩段暗的連成一片 */
-}
-
+   暗的只有這張卡片本身（底色取樣約 #161318），外面的段落維持紙色 */
 .contact.has-art {
   --ink: #f4efe9;
   --muted: #b9b2b6;
@@ -482,23 +380,9 @@ body:has(.hero.has-art) {
   padding-top: 28px;
 }
 
-.band-work {
-  background: var(--paper-2);
-}
-
-.band-recent,
-.band-contact {
-  background: var(--band-dark);
-  color: var(--band-dark-ink);
-  --card: var(--band-dark-card);
-  --line: var(--band-dark-line);
-  --muted: var(--band-dark-muted);
-  --ink: var(--band-dark-ink);
-  --paper-2: var(--band-dark-line);
-}
-
-.band-contact {
-  padding-bottom: 40px;
+/* 段落之間只靠留白分開；上一段的下留白加下一段的上留白太多，收一點 */
+.band + .band {
+  padding-top: 8px;
 }
 
 .eyebrow {
@@ -1104,13 +988,15 @@ a.row:hover strong {
   gap: 14px;
 }
 
-.band-contact .btn {
-  border-color: var(--band-dark-ink);
-  color: var(--band-dark-ink);
+/* 聯絡卡有暗色底圖時，裡面的按鈕改成淺色框、主要按鈕用強調色 */
+.contact.has-art .btn {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: transparent;
 }
 
-.band-contact .btn.primary,
-.band-contact .btn:hover {
+.contact.has-art .btn.primary,
+.contact.has-art .btn:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
@@ -1238,7 +1124,8 @@ a.row:hover strong {
 
 /* ── 頁尾 ─────────────────────────────────────────── */
 .footer {
-  background: #110f19; /* 跟首頁最後兩段暗色同一個紫黑，一路連到底 */
+  background: var(--band-dark);
+  margin-top: 24px;
   color: var(--band-dark-ink);
   --muted: var(--band-dark-muted);
   padding: 8px 0 40px;
