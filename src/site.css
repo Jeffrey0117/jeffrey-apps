@@ -588,6 +588,23 @@ a.card:hover {
   pointer-events: none;
 }
 
+/* 寬螢幕：貼紙放大、往下破出卡片，落在卡片下方的留白。
+   手機上卡片是直排，破出去會壓到下一張，所以維持收在卡片裡 */
+@media (min-width: 620px) {
+  .with-sticker {
+    overflow: visible;
+    padding-right: 150px;
+  }
+
+  .sticker {
+    height: 228px;
+    right: -6px;
+    bottom: -84px;
+    z-index: 2;
+    filter: drop-shadow(0 14px 16px rgb(22 20 15 / 0.18));
+  }
+}
+
 /* 中間寬度三張並排會擠到貼紙，改成大卡一整排、兩張小卡各半 */
 @media (min-width: 620px) and (max-width: 1139px) {
   .hero-grid {
