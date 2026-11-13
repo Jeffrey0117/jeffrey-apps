@@ -236,12 +236,47 @@ p {
 }
 
 /* ── 圖片插槽（src/img/ 有圖才會生效）──────────────── */
-/* 圖片網址直接寫在元素的 style 上：放進 CSS 變數的話，相對路徑會變成相對於這支樣式表 */
+/* 段落背景圖（1536×1024，上下有畫、中間留白）：
+   上緣露出圖最上面 28%，下緣露出最下面 45%，各自跟著螢幕寬度縮放；中間是純色，放卡片。
+   這樣段落多高都不會裁到圖裡的角色。--bg 的路徑相對於這支樣式表。 */
 .band.has-bg {
-  background-size: cover;
-  background-position: center bottom;
+  --art-top: 18.7vw; /* 圖高 (100vw × 2/3) 的 28% */
+  --art-bottom: 30vw; /* 圖高的 45% */
+  padding-top: calc(var(--art-top) * 0.85);
+  padding-bottom: calc(var(--art-bottom) + 12px);
+}
+
+.band.has-bg::before,
+.band.has-bg::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-image: var(--bg);
   background-repeat: no-repeat;
-  image-rendering: pixelated;
+  background-size: 100% auto;
+  pointer-events: none;
+}
+
+.band.has-bg::before {
+  top: 0;
+  height: var(--art-top);
+  background-position: center top;
+  mask-image: linear-gradient(to bottom, #000 78%, transparent);
+}
+
+.band.has-bg::after {
+  bottom: 0;
+  height: var(--art-bottom);
+  background-position: center bottom;
+  mask-image: linear-gradient(to top, #000 86%, transparent);
+}
+
+/* 亮底的圖配亮底的段落，接縫才看不出來 */
+.band-intro.has-bg,
+.band-work.has-bg,
+.band-tools.has-bg {
+  background-color: #fdfdfb;
 }
 
 .has-bg > .mosaic {
@@ -274,7 +309,6 @@ p {
 .cat {
   position: absolute;
   pointer-events: none;
-  image-rendering: pixelated;
   display: none;
 }
 

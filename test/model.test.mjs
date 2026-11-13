@@ -223,7 +223,8 @@ test('pages render the data and escape anything that came from outside', () => {
       og: 'img/og.png',
     },
   })
-  assert.match(withImages, /id="work" class="band band-work has-bg" style="background-image:url\('\.\/assets\/img\/bg-work\.png'\)"/)
+  // 背景圖的路徑相對於樣式表（assets/），所以不帶 ./assets/ 前綴
+  assert.match(withImages, /id="work" class="band band-work has-bg" style="--bg:url\('img\/bg-work\.png'\)"/)
   assert.match(withImages, /class="cat cat-hero" src="\.\/assets\/img\/cat-hero\.png"/)
   assert.match(withImages, /class="shot" src="\.\/assets\/img\/shots\/BigApp\.png"/)
   assert.match(withImages, /class="thumb" src="\.\/assets\/img\/shots\/foo-kit\.png"/)

@@ -176,10 +176,11 @@ export function renderHome(data) {
   palette = paletteOf(config)
   const images = data.images ?? { bg: {}, cat: {}, shots: {}, og: '' }
   const asset = (path) => `./assets/${esc(path)}`
-  // 有背景圖的段落換成圖，沒有的維持純色加馬賽克邊條
+  // 有背景圖的段落：圖的上段貼在段落上緣、下段貼在下緣，中間留白放卡片。
+  // 路徑刻意寫成相對於樣式表（assets/site.css）：CSS 變數裡的網址是以樣式表的位置解析的
   const band = (id) => {
     const bg = images.bg[id]
-    return `<section id="${id}" class="band band-${id}${bg ? ' has-bg' : ''}"${bg ? ` style="background-image:url('${asset(bg)}')"` : ''}>`
+    return `<section id="${id}" class="band band-${id}${bg ? ' has-bg' : ''}"${bg ? ` style="--bg:url('${esc(bg)}')"` : ''}>`
   }
   const cat = (slot) =>
     images.cat[slot] ? `<img class="cat cat-${slot}" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
