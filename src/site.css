@@ -240,9 +240,9 @@ p {
    上緣露出圖最上面 28%，下緣露出最下面 45%，各自跟著螢幕寬度縮放；中間是純色，放卡片。
    這樣段落多高都不會裁到圖裡的角色。--bg 的路徑相對於這支樣式表。 */
 .band.has-bg {
-  --art-top: 18.7vw; /* 圖高 (100vw × 2/3) 的 28% */
+  --art-top: 21vw; /* 圖高 (100vw × 2/3) 的 31.5% */
   --art-bottom: 32vw; /* 圖高的 48% */
-  padding-top: calc(var(--art-top) * 0.85);
+  padding-top: calc(var(--art-top) * 0.8);
   padding-bottom: calc(var(--art-bottom) + 12px);
 }
 
@@ -262,7 +262,7 @@ p {
   top: 0;
   height: var(--art-top);
   background-position: center top;
-  mask-image: linear-gradient(to bottom, #000 78%, transparent);
+  mask-image: linear-gradient(to bottom, #000 88%, transparent);
 }
 
 .band.has-bg::after {
