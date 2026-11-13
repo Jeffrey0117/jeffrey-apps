@@ -404,6 +404,39 @@ p {
   }
 }
 
+/* 聯絡卡的底圖（src/img/contact.*）：暗底，角色在右半邊，文字放左上的留白。
+   圖的底色取樣約 #161318，卡片和整段跟著它，接縫才看不出來 */
+.band-contact:has(.contact.has-art) {
+  background-color: #161318;
+}
+
+.contact.has-art {
+  --ink: #f4efe9;
+  --muted: #b9b2b6;
+  color: var(--ink);
+  background-color: #161318;
+  border-color: #332d33;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: auto 250px;
+  padding-bottom: 262px;
+  overflow: hidden;
+}
+
+@media (min-width: 760px) {
+  .contact.has-art {
+    background-size: cover;
+    min-height: 540px;
+    justify-content: flex-start;
+    padding: 40px 48px;
+  }
+
+  .contact.has-art h2,
+  .contact.has-art .lede {
+    max-width: 46%;
+  }
+}
+
 .lead.has-shot {
   padding-bottom: 0;
 }

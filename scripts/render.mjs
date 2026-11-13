@@ -372,7 +372,7 @@ ${band('tools')}
 ${band('contact')}
   <div class="wrap">
     <p class="eyebrow"><span>05</span>聯絡</p>
-    <div class="card contact">
+    <div class="card contact${images.contact ? ' has-art' : ''}"${images.contact ? ` style="background-image:url('${asset(images.contact)}')"` : ''}>
       <h2>${config.contact.lines.map(esc).join('<br>')}</h2>
       <p class="lede">${esc(config.contact.note)}</p>
       <div class="actions">
@@ -381,7 +381,7 @@ ${band('contact')}
         ${config.links.instagram ? `<a class="btn" href="${esc(config.links.instagram)}" rel="noopener">Instagram</a>` : ''}
         ${config.links.threads ? `<a class="btn" href="${esc(config.links.threads)}" rel="noopener">Threads</a>` : ''}
       </div>
-      ${cat('contact')}
+      ${images.contact ? '' : cat('contact')}
     </div>
   </div>
 </section>`
