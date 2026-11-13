@@ -193,6 +193,25 @@ test('pages render the data and escape anything that came from outside', () => {
   assert.match(home, /class="mosaic"/)
   assert.match(renderDevlog({ ...data, log: [] }), /目前沒有可以顯示的更新/)
 
+  // 圖片插槽：沒圖時什麼都不多；有圖時背景、吉祥物、截圖、分享圖各就各位
+  assert.ok(!home.includes('has-bg') && !home.includes('class="cat') && !home.includes('og:image'))
+  const withImages = renderHome({
+    ...data,
+    config: { ...config, siteUrl: 'https://example.test/site/' },
+    images: {
+      bg: { work: 'img/bg-work.png' },
+      cat: { hero: 'img/cat-hero.png' },
+      shots: { bigapp: 'img/shots/BigApp.png', 'foo-kit': 'img/shots/foo-kit.png' },
+      og: 'img/og.png',
+    },
+  })
+  assert.match(withImages, /id="work" class="band band-work has-bg" style="background-image:url\('\.\/assets\/img\/bg-work\.png'\)"/)
+  assert.match(withImages, /class="cat cat-hero" src="\.\/assets\/img\/cat-hero\.png"/)
+  assert.match(withImages, /class="shot" src="\.\/assets\/img\/shots\/BigApp\.png"/)
+  assert.match(withImages, /class="thumb" src="\.\/assets\/img\/shots\/foo-kit\.png"/)
+  assert.match(withImages, /og:image" content="https:\/\/example\.test\/site\/assets\/img\/og\.png"/)
+  assert.ok(!withImages.includes('class="waveform"'))
+
   assert.match(home, /自訂說明/)
   assert.match(home, /最近在改 BigApp/)
   assert.match(home, /數字截至 2026-11-13/)

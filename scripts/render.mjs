@@ -47,7 +47,11 @@ const stars = (count) => (count > 0 ? `<span class="stars">${ICONS.star}${count}
 const mono = (name) =>
   `<span class="mono-mark" style="--tile:${esc(colorFor(name, palette))}" aria-hidden="true">${esc([...name][0].toUpperCase())}</span>`
 
-function layout({ config, root, title, description, active, body, asOf }) {
+function layout({ config, root, title, description, active, body, asOf, images }) {
+  const ogImage = images?.og && config.siteUrl ? `${config.siteUrl.replace(/\/$/, '')}/assets/${images.og}` : ''
+  const ogTags = ogImage
+    ? `<meta property="og:image" content="${esc(ogImage)}">\n<meta name="twitter:card" content="summary_large_image">`
+    : ''
   const nav = [
     { id: 'home', label: '首頁', href: `${root}` },
     { id: 'work', label: '作品', href: `${root}work/` },
@@ -71,6 +75,7 @@ function layout({ config, root, title, description, active, body, asOf }) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:type" content="website">
+${ogTags}
 <meta name="color-scheme" content="light dark">
 ${config.avatar ? `<link rel="icon" href="${root}assets/${esc(config.avatar)}">` : ''}
 <link rel="stylesheet" href="${root}assets/site.css">
@@ -130,8 +135,9 @@ function heatmap(activity) {
   return `<div class="heatmap" role="img" aria-label="${esc(shortDate(activity.from))} 到 ${esc(shortDate(activity.to))} 共 ${activity.total} 次更新">${cells}</div>`
 }
 
-function smallCard(project) {
-  return `<a class="card small" href="${esc(project.link)}" rel="noopener">
+function smallCard(project, thumb = '') {
+  return `<a class="card small${thumb ? ' has-thumb' : ''}" href="${esc(project.link)}" rel="noopener">
+        ${thumb ? `<img class="thumb" src="${thumb}" alt="" loading="lazy">` : ''}
         ${mono(project.name)}
         <h3>${esc(project.name)}</h3>
         <p>${esc(project.blurb)}</p>
@@ -152,6 +158,19 @@ function listRows(projects) {
 export function renderHome(data) {
   const { config, projects, summary, activity, updates, languages, asOf } = data
   palette = paletteOf(config)
+  const images = data.images ?? { bg: {}, cat: {}, shots: {}, og: '' }
+  const asset = (path) => `./assets/${esc(path)}`
+  // 有背景圖的段落換成圖，沒有的維持純色加馬賽克邊條
+  const band = (id) => {
+    const bg = images.bg[id]
+    return `<section id="${id}" class="band band-${id}${bg ? ' has-bg' : ''}"${bg ? ` style="background-image:url('${asset(bg)}')"` : ''}>`
+  }
+  const cat = (slot) =>
+    images.cat[slot] ? `<img class="cat cat-${slot}" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
+  const shotOf = (name) => {
+    const file = images.shots[String(name).toLowerCase()]
+    return file ? asset(file) : ''
+  }
   const find = (name) => projects.find((project) => project.name.toLowerCase() === String(name).toLowerCase())
   const pick = (names) => (names ?? []).map(find).filter(Boolean)
   const home = config.home
@@ -182,7 +201,7 @@ export function renderHome(data) {
   ${stages.map(([id, label], index) => `<a href="#${id}"><span>${index + 1}</span><em>${label}</em></a>`).join('\n  ')}
 </nav>
 
-<section id="intro" class="band band-intro">
+${band('intro')}
   <div class="wrap">
     <p class="eyebrow"><span>01</span>起點</p>
     <div class="hero-grid">
@@ -194,6 +213,7 @@ export function renderHome(data) {
           <a class="btn primary" href="#work">看作品</a>
           ${config.links.github ? `<a class="btn" href="${esc(config.links.github)}" rel="noopener">${ICONS.github}GitHub</a>` : ''}
         </div>
+        ${cat('hero')}
       </div>
       <a class="card stat ink with-avatar" href="./work/">
         <span class="label">公開的東西</span>
@@ -216,17 +236,21 @@ export function renderHome(data) {
   ${mosaic(11)}
 </section>
 
-<section id="work" class="band band-work">
+${band('work')}
   <div class="wrap">${sectionHead('02', '作品', '挑幾個做過的東西，<br>給你看看。', `<a class="btn" href="./work/">全部 ${summary.projects} 件${ICONS.arrow}</a>`)}
     <div class="bento">
       ${
         lead
-          ? `<a class="card lead" href="${esc(lead.link)}" rel="noopener">
+          ? `<a class="card lead${shotOf(lead.name) ? ' has-shot' : ''}" href="${esc(lead.link)}" rel="noopener">
         <p class="label">桌面 App・開源</p>
         <h3>${esc(lead.name)}</h3>
         <p>${esc(lead.blurb)}</p>
         <div class="meta">${stars(lead.stars)}<span class="chip">${esc(lead.language)}</span></div>
-        <div class="waveform" aria-hidden="true">${Array.from({ length: 36 }, (_, i) => `<i style="--h:${18 + Math.round(Math.abs(Math.sin(i * 0.9) * 60 + Math.cos(i * 0.37) * 22))}%"></i>`).join('')}</div>
+        ${
+          shotOf(lead.name)
+            ? `<img class="shot" src="${shotOf(lead.name)}" alt="${esc(lead.name)} 的畫面" loading="lazy">`
+            : `<div class="waveform" aria-hidden="true">${Array.from({ length: 36 }, (_, i) => `<i style="--h:${18 + Math.round(Math.abs(Math.sin(i * 0.9) * 60 + Math.cos(i * 0.37) * 22))}%"></i>`).join('')}</div>`
+        }
       </a>`
           : ''
       }
@@ -240,7 +264,7 @@ export function renderHome(data) {
       </a>`
           : ''
       }
-      ${small.map(smallCard).join('\n      ')}
+      ${small.map((project) => smallCard(project, shotOf(project.name))).join('\n      ')}
       <div class="card list-card">
         <div class="list-head"><h3>${esc(home.trio.title)}</h3><span class="muted">${esc(home.trio.note)}</span></div>
         <div class="rows">
@@ -264,7 +288,7 @@ export function renderHome(data) {
   ${mosaic(23)}
 </section>
 
-<section id="recent" class="band band-recent">
+${band('recent')}
   <div class="wrap">${sectionHead('03', '最近', '最近在忙什麼')}
     <div class="recent-grid">
       <div class="card">
@@ -306,7 +330,7 @@ export function renderHome(data) {
   </div>
 </section>
 
-<section id="tools" class="band band-tools">
+${band('tools')}
   <div class="wrap">${sectionHead('04', '工具', '常用的工具，<br>和做事的方式')}
     <div class="tools-grid">
       <div class="card">
@@ -328,7 +352,7 @@ export function renderHome(data) {
   ${mosaic(37)}
 </section>
 
-<section id="contact" class="band band-contact">
+${band('contact')}
   <div class="wrap">
     <p class="eyebrow"><span>05</span>聯絡</p>
     <div class="card contact">
@@ -340,11 +364,12 @@ export function renderHome(data) {
         ${config.links.instagram ? `<a class="btn" href="${esc(config.links.instagram)}" rel="noopener">Instagram</a>` : ''}
         ${config.links.threads ? `<a class="btn" href="${esc(config.links.threads)}" rel="noopener">Threads</a>` : ''}
       </div>
+      ${cat('contact')}
     </div>
   </div>
 </section>`
 
-  return layout({ config, root: './', title: config.title, description: config.description, active: 'home', body, asOf })
+  return layout({ config, root: './', title: config.title, description: config.description, active: 'home', body, asOf, images })
 }
 
 export function renderDevlog(data) {
@@ -399,6 +424,7 @@ export function renderDevlog(data) {
     active: 'devlog',
     body,
     asOf,
+    images: data.images,
   })
 }
 
@@ -442,5 +468,6 @@ export function renderWork(data) {
     active: 'work',
     body,
     asOf,
+    images: data.images,
   })
 }

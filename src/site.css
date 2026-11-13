@@ -207,6 +207,113 @@ p {
   z-index: 1;
 }
 
+/* ── 圖片插槽（src/img/ 有圖才會生效）──────────────── */
+/* 圖片網址直接寫在元素的 style 上：放進 CSS 變數的話，相對路徑會變成相對於這支樣式表 */
+.band.has-bg {
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.has-bg > .mosaic {
+  display: none;
+}
+
+/* 標題直接壓在圖上會看不清楚，墊一塊底 */
+.has-bg .section-head h2,
+.has-bg .page-title {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8px 16px;
+  display: block;
+  width: fit-content;
+}
+
+.has-bg .section-head .btn {
+  background: var(--card);
+  color: var(--ink);
+}
+
+.has-bg .eyebrow {
+  background: var(--band-dark);
+  color: var(--band-dark-ink);
+  padding: 4px 10px 4px 4px;
+  border-radius: 8px;
+}
+
+.cat {
+  position: absolute;
+  pointer-events: none;
+  image-rendering: pixelated;
+  display: none;
+}
+
+@media (min-width: 760px) {
+  .cat {
+    display: block;
+  }
+
+  .hero:has(.cat-hero),
+  .contact:has(.cat-contact) {
+    position: relative;
+  }
+
+  /* 只讓下半部的內文讓位給吉祥物，標題維持整行寬 */
+  .hero:has(.cat-hero) .lede,
+  .contact:has(.cat-contact) .lede {
+    max-width: min(34em, calc(100% - 200px));
+  }
+
+  .cat-hero {
+    right: 18px;
+    bottom: 12px;
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+  }
+
+  .cat-contact {
+    right: 28px;
+    bottom: 18px;
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
+  }
+}
+
+.lead.has-shot {
+  padding-bottom: 0;
+}
+
+.shot {
+  display: block;
+  width: calc(100% + 44px);
+  max-width: none;
+  margin: 14px -22px 0;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  object-position: top center;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.card.small.has-thumb {
+  padding-top: 0;
+  overflow: hidden;
+}
+
+.thumb {
+  display: block;
+  width: calc(100% + 44px);
+  max-width: none;
+  margin: 0 -22px 14px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-bottom: 1px solid var(--line);
+}
+
 .wrap.narrow {
   max-width: 820px;
 }

@@ -2,7 +2,7 @@
 //   node scripts/build.mjs            重新抓資料
 //   node scripts/build.mjs --offline  用上次抓的資料（改版面時用，快）
 
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fetchContributionDays, fetchRecentCommits, fetchRepos, findToken } from './github.mjs'
@@ -53,6 +53,26 @@ async function loadRaw() {
   return raw
 }
 
+// 圖片插槽：src/img/ 裡有對應檔名的圖就自動用上，沒有就維持純 CSS 的版本
+function findImages() {
+  const dir = join(root, 'src', 'img')
+  const images = { bg: {}, cat: {}, shots: {}, og: '' }
+  if (!existsSync(dir)) return images
+  const isImage = (file) => /\.(png|jpe?g|webp|avif)$/i.test(file)
+  const base = (file) => file.replace(/\.[^.]+$/, '').toLowerCase()
+  for (const file of readdirSync(dir).filter(isImage)) {
+    const name = base(file)
+    if (name.startsWith('bg-')) images.bg[name.slice(3)] = `img/${file}`
+    else if (name.startsWith('cat-')) images.cat[name.slice(4)] = `img/${file}`
+    else if (name === 'og') images.og = `img/${file}`
+  }
+  const shots = join(dir, 'shots')
+  if (existsSync(shots)) {
+    for (const file of readdirSync(shots).filter(isImage)) images.shots[base(file)] = `img/shots/${file}`
+  }
+  return images
+}
+
 const raw = await loadRaw()
 const projects = buildProjects(raw.repos, config)
 const asOf = raw.fetchedAt.slice(0, 10)
@@ -66,6 +86,7 @@ const data = {
   updates: latestPerRepo(log, UPDATE_COUNT),
   log,
   languages: languageCounts(projects),
+  images: findImages(),
   asOf,
 }
 
@@ -77,4 +98,6 @@ writeFileSync(join(dist, 'work', 'index.html'), renderWork(data), 'utf8')
 writeFileSync(join(dist, 'devlog', 'index.html'), renderDevlog(data), 'utf8')
 writeFileSync(join(dist, '.nojekyll'), '', 'utf8')
 
+const { bg, cat, shots, og } = data.images
+console.log(`圖片：背景 ${Object.keys(bg).length}、吉祥物 ${Object.keys(cat).length}、截圖 ${Object.keys(shots).length}${og ? '、分享圖 1' : ''}`)
 console.log(`完成：${projects.length} 件作品、${data.summary.stars} 顆星、資料時間 ${asOf}${offline ? '（離線）' : ''}`)
