@@ -1,5 +1,24 @@
 // HTML 樣板。所有來自外部的文字都過 esc()。
 
+import { colorFor, groupByDay, mosaicCells } from './model.mjs'
+
+const DEFAULT_PALETTE = ['#ffd84d', '#ff9ec4', '#7fd4ff', '#8be3b0', '#ffb067', '#c9a6ff', '#fff3c4']
+const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
+const paletteOf = (config) => (config.palette?.length ? config.palette : DEFAULT_PALETTE)
+// 每個 render 函式一開始會設定，mono() 和 mosaic() 共用
+let palette = DEFAULT_PALETTE
+
+// 馬賽克邊條。放在段落底部，方塊越往下越密
+function mosaic(seed) {
+  const cell = 10
+  const cols = 180
+  const rows = 6
+  const rects = mosaicCells({ seed, cols, rows, palette })
+    .map((c) => `<rect x="${c.col * cell}" y="${c.row * cell}" width="${cell}" height="${cell}" fill="${esc(c.color)}"/>`)
+    .join('')
+  return `<svg class="mosaic" viewBox="0 0 ${cols * cell} ${rows * cell}" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`
+}
+
 export const esc = (value) =>
   String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -25,12 +44,14 @@ const ICONS = {
 }
 
 const stars = (count) => (count > 0 ? `<span class="stars">${ICONS.star}${count}</span>` : '')
-const mono = (name) => `<span class="mono-mark" aria-hidden="true">${esc([...name][0].toUpperCase())}</span>`
+const mono = (name) =>
+  `<span class="mono-mark" style="--tile:${esc(colorFor(name, palette))}" aria-hidden="true">${esc([...name][0].toUpperCase())}</span>`
 
 function layout({ config, root, title, description, active, body, asOf }) {
   const nav = [
     { id: 'home', label: '首頁', href: `${root}` },
-    { id: 'work', label: '全部作品', href: `${root}work/` },
+    { id: 'work', label: '作品', href: `${root}work/` },
+    { id: 'devlog', label: '日誌', href: `${root}devlog/` },
   ]
   const { github, email, instagram, threads } = config.links
   const socials = [
@@ -51,6 +72,7 @@ function layout({ config, root, title, description, active, body, asOf }) {
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:type" content="website">
 <meta name="color-scheme" content="light dark">
+${config.avatar ? `<link rel="icon" href="${root}assets/${esc(config.avatar)}">` : ''}
 <link rel="stylesheet" href="${root}assets/site.css">
 <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
@@ -76,12 +98,13 @@ ${body}
     <nav aria-label="頁尾">
       <a href="${root}">首頁</a>
       <a href="${root}work/">全部作品</a>
+      <a href="${root}devlog/">開發日誌</a>
       ${socials.join('\n      ')}
     </nav>
   </div>
   <div class="wrap footer-note">
     <span>數字截至 ${esc(asOf)}，由 GitHub 公開資料自動產生。</span>
-    <span>© ${new Date(asOf).getUTCFullYear()} ${esc(config.brand.replace(/\.$/, ''))}</span>
+    <span>© ${new Date(asOf).getUTCFullYear()} ${esc(config.name ?? config.brand)}</span>
   </div>
 </footer>
 <script src="${root}assets/site.js" defer></script>
@@ -128,6 +151,7 @@ function listRows(projects) {
 
 export function renderHome(data) {
   const { config, projects, summary, activity, updates, languages, asOf } = data
+  palette = paletteOf(config)
   const find = (name) => projects.find((project) => project.name.toLowerCase() === String(name).toLowerCase())
   const pick = (names) => (names ?? []).map(find).filter(Boolean)
   const home = config.home
@@ -171,10 +195,11 @@ export function renderHome(data) {
           ${config.links.github ? `<a class="btn" href="${esc(config.links.github)}" rel="noopener">${ICONS.github}GitHub</a>` : ''}
         </div>
       </div>
-      <a class="card stat ink" href="./work/">
+      <a class="card stat ink with-avatar" href="./work/">
         <span class="label">公開的東西</span>
         <span class="big">${summary.projects}<small>件</small></span>
         <span class="muted">${summary.byCategory.filter((c) => c.count > 0).slice(0, 4).map((c) => esc(c.label)).join('、')}</span>
+        ${config.avatar ? `<img class="avatar" src="./assets/${esc(config.avatar)}" alt="${esc(config.name ?? '')} 的頭貼：一隻彩色馬賽克貓" width="240" height="240">` : ''}
       </a>
       <div class="card stat">
         <span class="label">Kit</span>
@@ -188,6 +213,7 @@ export function renderHome(data) {
       </div>
     </div>
   </div>
+  ${mosaic(11)}
 </section>
 
 <section id="work" class="band band-work">
@@ -235,13 +261,14 @@ export function renderHome(data) {
       </a>
     </div>
   </div>
+  ${mosaic(23)}
 </section>
 
 <section id="recent" class="band band-recent">
   <div class="wrap">${sectionHead('03', '最近', '最近在忙什麼')}
     <div class="recent-grid">
       <div class="card">
-        <div class="list-head"><h3>開發日誌</h3><span class="muted">${activity.cells.length ? `${esc(shortDate(activity.from))} – ${esc(shortDate(activity.to))}・${activity.total} 次更新` : ''}</span></div>
+        <div class="list-head"><h3><a href="./devlog/">開發日誌</a></h3><span class="muted">${activity.cells.length ? `${esc(shortDate(activity.from))} – ${esc(shortDate(activity.to))}・${activity.total} 次更新` : ''}</span></div>
         ${heatmap(activity)}
         <div class="rows log">
           ${updates
@@ -254,6 +281,7 @@ export function renderHome(data) {
             )
             .join('\n          ')}
         </div>
+        <a class="more-link" href="./devlog/">看完整日誌${ICONS.arrow}</a>
       </div>
       <div class="card">
         <div class="list-head"><h3>依類型</h3><span class="muted">點了看全部</span></div>
@@ -297,6 +325,7 @@ export function renderHome(data) {
       </div>
     </div>
   </div>
+  ${mosaic(37)}
 </section>
 
 <section id="contact" class="band band-contact">
@@ -318,8 +347,64 @@ export function renderHome(data) {
   return layout({ config, root: './', title: config.title, description: config.description, active: 'home', body, asOf })
 }
 
+export function renderDevlog(data) {
+  const { config, log, activityLong, asOf } = data
+  palette = paletteOf(config)
+  const days = groupByDay(log)
+  const dayLabel = (iso) => {
+    const date = new Date(`${iso}T00:00:00Z`)
+    return `${date.getUTCMonth() + 1}/${date.getUTCDate()}（${WEEKDAYS[date.getUTCDay()]}）`
+  }
+
+  const body = `
+<section class="band band-intro devlog-page">
+  <div class="wrap narrow">
+    <p class="eyebrow"><span>日誌</span>開發日誌</p>
+    <h1 class="page-title">最近在忙什麼</h1>
+    <p class="lede">各個公開專案的更新，合成一條時間線。每一筆都連到那個專案的原始碼。</p>
+    <div class="card">
+      <div class="list-head"><h3>活躍度</h3><span class="muted">${activityLong.cells.length ? `${esc(shortDate(activityLong.from))} – ${esc(shortDate(activityLong.to))}・${activityLong.total} 次更新` : ''}</span></div>
+      <div class="heatmap-scroll">${heatmap(activityLong)}</div>
+    </div>
+    ${
+      days.length === 0
+        ? '<p class="muted">目前沒有可以顯示的更新。</p>'
+        : days
+            .map(
+              (day) => `<div class="day">
+      <h2 class="day-title">${esc(dayLabel(day.date))}<span class="muted">${day.entries.length} 筆</span></h2>
+      <div class="card rows log">
+        ${day.entries
+          .map(
+            (entry) => `<a class="row" href="${esc(entry.url)}" rel="noopener">
+          ${mono(entry.name)}
+          <span><strong>${esc(entry.name)}</strong><span class="muted">${esc(entry.message)}</span></span>
+        </a>`,
+          )
+          .join('\n        ')}
+      </div>
+    </div>`,
+            )
+            .join('\n    ')
+    }
+  </div>
+  ${mosaic(53)}
+</section>`
+
+  return layout({
+    config,
+    root: '../',
+    title: `開發日誌｜${config.name ?? config.brand}`,
+    description: `${config.name ?? ''} 各個公開專案的最近更新。`,
+    active: 'devlog',
+    body,
+    asOf,
+  })
+}
+
 export function renderWork(data) {
   const { config, projects, summary, asOf } = data
+  palette = paletteOf(config)
   const groups = summary.byCategory.filter((category) => category.count > 0)
 
   const body = `
@@ -346,12 +431,13 @@ export function renderWork(data) {
         .join('\n      ')}
     </div>
   </div>
+  ${mosaic(41)}
 </section>`
 
   return layout({
     config,
     root: '../',
-    title: `全部作品｜${config.brand.replace(/\.$/, '')}`,
+    title: `全部作品｜${config.name ?? config.brand}`,
     description: `公開的 ${summary.projects} 件作品：桌面 App、自架服務、kit、開發工具與瀏覽器腳本。`,
     active: 'work',
     body,

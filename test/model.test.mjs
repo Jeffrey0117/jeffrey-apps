@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { buildProjects, categorize, cleanText, isSafeText, isVisible, languageCounts, pickUpdate, recentActivity, summarize, toProject } from '../scripts/model.mjs'
-import { esc, renderHome, renderWork } from '../scripts/render.mjs'
+import {
+  buildLog, buildProjects, categorize, cleanText, colorFor, groupByDay, isSafeText, isVisible, languageCounts,
+  latestPerRepo, mosaicCells, recentActivity, seededRandom, summarize, toProject,
+} from '../scripts/model.mjs'
+import { esc, renderDevlog, renderHome, renderWork } from '../scripts/render.mjs'
 
 const config = {
   user: 'someone',
@@ -84,18 +87,46 @@ test('nothing matching the redact list reaches a project', () => {
   assert.equal(leaky.link, 'https://github.com/someone/leaky')
 })
 
-test('pickUpdate skips routine, unsafe and already-used commit messages', () => {
-  const commits = [
-    { message: 'chore: describe this repository', date: 'd1' },
-    { message: 'docs: readme', date: 'd2' },
-    { message: 'fix: point at privatezone.com', date: 'd3' },
-    { message: 'feat: already shown elsewhere', date: 'd4' },
-    { message: 'feat: camera download', date: 'd5' },
-  ]
-  const used = new Set(['feat: already shown elsewhere'])
-  assert.equal(pickUpdate(commits, config, used).message, 'feat: camera download')
-  assert.equal(pickUpdate(commits.slice(0, 3), config), null)
-  assert.equal(pickUpdate([], config), null)
+const entry = (name, message, date) => ({ name, url: `https://github.com/someone/${name}`, message, date })
+
+test('buildLog drops routine and unsafe commits, dedupes, and sorts newest first', () => {
+  const log = buildLog(
+    [
+      entry('a', 'chore: describe this repository', '2026-11-13T05:00:00Z'),
+      entry('a', 'docs: readme', '2026-11-13T04:00:00Z'),
+      entry('a', 'fix: point at privatezone.com', '2026-11-13T03:00:00Z'),
+      entry('a', 'feat: camera download', '2026-11-12T02:00:00Z'),
+      entry('b', 'feat: shared wording', '2026-11-13T01:00:00Z'),
+      entry('c', 'feat: shared wording', '2026-11-11T01:00:00Z'),
+      entry('b', 'fix: older', '2026-11-10T01:00:00Z'),
+      entry('d', '', '2026-11-13T09:00:00Z'),
+    ],
+    config,
+  )
+  assert.deepEqual(log.map((item) => `${item.name}:${item.message}`), [
+    'b:feat: shared wording',
+    'a:feat: camera download',
+    'b:fix: older',
+  ])
+  assert.deepEqual(latestPerRepo(log, 5).map((item) => item.name), ['b', 'a'])
+  assert.deepEqual(groupByDay(log).map((day) => [day.date, day.entries.length]), [
+    ['2026-11-13', 1],
+    ['2026-11-12', 1],
+    ['2026-11-10', 1],
+  ])
+  assert.equal(buildLog([entry('a', 'feat: x', '2026-11-01T00:00:00Z'), entry('a', 'feat: y', '2026-11-02T00:00:00Z')], config, 1).length, 1)
+})
+
+test('decoration is deterministic and stays inside the palette', () => {
+  const palette = ['#111111', '#222222']
+  const first = mosaicCells({ seed: 7, cols: 40, rows: 5, palette })
+  assert.deepEqual(first, mosaicCells({ seed: 7, cols: 40, rows: 5, palette }))
+  assert.notDeepEqual(first, mosaicCells({ seed: 8, cols: 40, rows: 5, palette }))
+  assert.ok(first.every((cell) => palette.includes(cell.color) && cell.col < 40 && cell.row < 5))
+  const perRow = (row) => first.filter((cell) => cell.row === row).length
+  assert.ok(perRow(4) > perRow(0)) // 越靠底部越密
+  assert.equal(colorFor('Pokkit', palette), colorFor('Pokkit', palette))
+  assert.ok(seededRandom(1)() < 1)
 })
 
 test('toProject prefers the configured blurb and a real homepage', () => {
@@ -143,11 +174,24 @@ test('pages render the data and escape anything that came from outside', () => {
     summary: summarize(projects, config),
     activity: recentActivity([{ date: '2026-11-13', count: 3 }], 2, '2026-11-13'),
     updates: [{ name: 'BigApp', url: 'https://github.com/someone/BigApp', message: 'feat: "quoted" <b>', date: '2026-11-13T01:00:00Z' }],
+    log: [
+      { name: 'BigApp', url: 'https://github.com/someone/BigApp', message: 'feat: "quoted" <b>', date: '2026-11-13T01:00:00Z' },
+      { name: 'foo-kit', url: 'https://github.com/someone/foo-kit', message: 'fix: edge case', date: '2026-11-12T01:00:00Z' },
+    ],
+    activityLong: recentActivity([{ date: '2026-11-13', count: 3 }], 4, '2026-11-13'),
     languages: languageCounts(projects),
     asOf: '2026-11-13',
   }
   const home = renderHome(data)
   const work = renderWork(data)
+  const devlog = renderDevlog(data)
+
+  assert.match(devlog, /11\/13（五）/)
+  assert.match(devlog, /11\/12（四）/)
+  assert.match(devlog, /feat: &quot;quoted&quot; &lt;b&gt;/)
+  assert.match(devlog, /href="\.\.\/assets\/site\.css"/)
+  assert.match(home, /class="mosaic"/)
+  assert.match(renderDevlog({ ...data, log: [] }), /目前沒有可以顯示的更新/)
 
   assert.match(home, /自訂說明/)
   assert.match(home, /最近在改 BigApp/)

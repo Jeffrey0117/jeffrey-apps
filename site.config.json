@@ -1,11 +1,15 @@
 {
   "user": "Jeffrey0117",
-  "brand": "Jeffrey.",
-  "title": "Jeffrey｜桌面 App、自架服務與開發工具",
-  "description": "Jeffrey 做的東西：桌面 App、自架服務、零依賴 kit 與開發工具，原始碼大多公開在 GitHub。",
+  "brand": "htmlcat.",
+  "title": "htmlcat 切版直人｜桌面 App、自架服務與開發工具",
+  "description": "htmlcat 切版直人做的東西：桌面 App、自架服務、零依賴 kit 與開發工具，原始碼大多公開在 GitHub。",
   "hero": {
-    "lines": ["嗨，我是 Jeffrey。", "一個人，", "做一整套自己的工具。"],
-    "accentLine": 2,
+    "lines": [
+      "嗨，我是 htmlcat，",
+      "切版直人。",
+      "一個人做一整套自己的工具。"
+    ],
+    "accentLine": 1,
     "intro": "住在台灣。做桌面 App、自架服務和開發工具；能抽成零依賴 kit 的就抽出來，改一次，所有專案一起升級。原始碼大多公開在 GitHub。"
   },
   "links": {
@@ -15,22 +19,109 @@
     "threads": ""
   },
   "contact": {
-    "lines": ["看到這裡了，", "一起做點什麼？"],
+    "lines": [
+      "看到這裡了，",
+      "一起做點什麼？"
+    ],
     "note": "合作、回報 bug、想用哪個工具卡住了，都可以到 GitHub 開 issue 找我。"
   },
   "categories": [
-    { "id": "app", "label": "桌面 App" },
-    { "id": "service", "label": "自架服務" },
-    { "id": "kit", "label": "Kit" },
-    { "id": "tool", "label": "開發工具" },
-    { "id": "script", "label": "瀏覽器腳本" },
-    { "id": "web", "label": "網頁與實驗" }
+    {
+      "id": "app",
+      "label": "桌面 App"
+    },
+    {
+      "id": "service",
+      "label": "自架服務"
+    },
+    {
+      "id": "kit",
+      "label": "Kit"
+    },
+    {
+      "id": "tool",
+      "label": "開發工具"
+    },
+    {
+      "id": "script",
+      "label": "瀏覽器腳本"
+    },
+    {
+      "id": "web",
+      "label": "網頁與實驗"
+    }
   ],
   "categoryOf": {
-    "app": ["SpeakSlow", "RePic", "ReVid", "MemoryGuy", "DuckShot", "lanpai-overlay", "ReFile", "Screenshot-OCR", "SeeKeyboard", "ShotBoard", "PyClick", "whereismywindow", "SameScreen", "Electron-remote-typer", "freetube-ultra", "AprilVoice", "LocalTab", "recovermyweb", "revid-web"],
-    "service": ["Pokkit", "Selfize", "SelfBase", "LetMeUse", "areyoubot", "Workr", "RawTxt", "SoloHQ", "speakslow-stats", "revid-sync", "lanpai-server", "Ytify", "Sherpa_ASR", "Hanzi_ASR", "tg-proxy", "WeAreHere", "dropkit", "LaunchKit", "pipee-pages", "blobstore", "takeenglish", "ReelScript"],
-    "tool": ["ClaudeBot", "claudebot-plugins", "DevFault", "smart-install", "mytoolbox", "saveclaudenode", "ver2", "gitgpt", "supabase-guard", "vscode-claude-electron-fix", "JQX", "atomicX", "strver", "lineX", "modern-proxy", "modern-ffi", "modern-fs", "modern-crypto", "modern-audio", "meei"],
-    "kit": ["kit-kit"]
+    "app": [
+      "SpeakSlow",
+      "RePic",
+      "ReVid",
+      "MemoryGuy",
+      "DuckShot",
+      "lanpai-overlay",
+      "ReFile",
+      "Screenshot-OCR",
+      "SeeKeyboard",
+      "ShotBoard",
+      "PyClick",
+      "whereismywindow",
+      "SameScreen",
+      "Electron-remote-typer",
+      "freetube-ultra",
+      "AprilVoice",
+      "LocalTab",
+      "recovermyweb",
+      "revid-web"
+    ],
+    "service": [
+      "Pokkit",
+      "Selfize",
+      "SelfBase",
+      "LetMeUse",
+      "areyoubot",
+      "Workr",
+      "RawTxt",
+      "SoloHQ",
+      "speakslow-stats",
+      "revid-sync",
+      "lanpai-server",
+      "Ytify",
+      "Sherpa_ASR",
+      "Hanzi_ASR",
+      "tg-proxy",
+      "WeAreHere",
+      "dropkit",
+      "LaunchKit",
+      "pipee-pages",
+      "blobstore",
+      "takeenglish",
+      "ReelScript"
+    ],
+    "tool": [
+      "ClaudeBot",
+      "claudebot-plugins",
+      "DevFault",
+      "smart-install",
+      "mytoolbox",
+      "saveclaudenode",
+      "ver2",
+      "gitgpt",
+      "supabase-guard",
+      "vscode-claude-electron-fix",
+      "JQX",
+      "atomicX",
+      "strver",
+      "lineX",
+      "modern-proxy",
+      "modern-ffi",
+      "modern-fs",
+      "modern-crypto",
+      "modern-audio",
+      "meei"
+    ],
+    "kit": [
+      "kit-kit"
+    ]
   },
   "blurbs": {
     "SpeakSlow": "專為中文打造的本地語音輸入。100% 本機、不上雲，講完直接貼到游標處，特別適合用語音跟 AI 對話。",
@@ -56,21 +147,71 @@
     "trio": {
       "title": "三棟桌面 App",
       "note": "圖、片、檔，各管一塊，都有自動更新",
-      "repos": ["RePic", "ReVid", "MemoryGuy"]
+      "repos": [
+        "RePic",
+        "ReVid",
+        "MemoryGuy"
+      ]
     },
-    "small": ["Pokkit", "pdfluv2", "PyClick", "lanpai-overlay"],
+    "small": [
+      "Pokkit",
+      "pdfluv2",
+      "PyClick",
+      "lanpai-overlay"
+    ],
     "kitCard": {
       "title": "Kit 生態系",
       "note": "零依賴、可複用。每個專案都拿最強版，改一次全部升級。",
-      "show": ["auth-kit", "jwks-verify-kit", "newebpay-kit", "paywall-kit", "chunked-upload-kit", "autopost-kit", "video-core-kit", "ratelimit-kit"]
+      "show": [
+        "auth-kit",
+        "jwks-verify-kit",
+        "newebpay-kit",
+        "paywall-kit",
+        "chunked-upload-kit",
+        "autopost-kit",
+        "video-core-kit",
+        "ratelimit-kit"
+      ]
     },
     "list": {
       "title": "自架的基礎建設",
       "note": "不租別人的，自己架",
-      "repos": ["Selfize", "SelfBase", "LetMeUse", "areyoubot", "Workr"]
+      "repos": [
+        "Selfize",
+        "SelfBase",
+        "LetMeUse",
+        "areyoubot",
+        "Workr"
+      ]
     }
   },
-  "hide": ["^Jeffrey0117$", "^Jeffrey0117\\.github\\.io$", "^jeffrey-apps$", "^isnow", "^LincLab$", "^test$", "^hihi$", "^yoni$", "^loan$"],
-  "redact": ["isnow[a-z]+", "localhost", "\\b\\d{1,3}(?:\\.\\d{1,3}){3}\\b"],
-  "hideUntouchedBefore": "2025-08-01"
+  "hide": [
+    "^Jeffrey0117$",
+    "^Jeffrey0117\\.github\\.io$",
+    "^jeffrey-apps$",
+    "^isnow",
+    "^LincLab$",
+    "^test$",
+    "^hihi$",
+    "^yoni$",
+    "^loan$"
+  ],
+  "redact": [
+    "isnow[a-z]+",
+    "localhost",
+    "\\b\\d{1,3}(?:\\.\\d{1,3}){3}\\b"
+  ],
+  "hideUntouchedBefore": "2025-08-01",
+  "name": "htmlcat",
+  "role": "切版直人",
+  "avatar": "avatar.jpg",
+  "palette": [
+    "#ffd84d",
+    "#ff9ec4",
+    "#7fd4ff",
+    "#8be3b0",
+    "#ffb067",
+    "#c9a6ff",
+    "#fff3c4"
+  ]
 }

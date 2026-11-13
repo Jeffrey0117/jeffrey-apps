@@ -1,8 +1,9 @@
 # jeffrey-apps
 
-Jeffrey 的作品站。內容不是手寫的：build 時從 GitHub 的公開資料抓專案、星數、最近更新，產生靜態網頁。
+htmlcat 切版直人的作品站。內容不是手寫的：build 時從 GitHub 的公開資料抓專案、星數、最近更新，產生靜態網頁。
 
 - 首頁：自我介紹 → 作品 → 最近在忙什麼 → 工具 → 聯絡
+- `/devlog/`：開發日誌，各專案的更新合成一條時間線
 - `/work/`：全部作品，可依類型篩選（`/work/#kit` 直接帶到某一類）
 
 ## 指令
@@ -23,7 +24,8 @@ build 會用 `GITHUB_TOKEN` 環境變數，沒有就用 `gh auth token`。token 
 
 | 欄位 | 用途 |
 |---|---|
-| `hero`、`contact` | 首頁開頭與結尾的文字 |
+| `brand`、`name`、`role`、`hero`、`contact` | 站名與首頁開頭、結尾的文字 |
+| `avatar`、`palette` | 頭貼檔名（放在 `src/`）與馬賽克裝飾用的顏色 |
 | `links` | GitHub、Email、Instagram、Threads。留空就不顯示 |
 | `home` | 首頁作品區放哪些專案（`lead` 大卡、`dark` 深色卡、`small` 小卡、三棟、kit、自架清單） |
 | `blurbs` | 專案的中文說明。沒寫就用 GitHub 上的描述 |

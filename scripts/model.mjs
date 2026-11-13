@@ -45,18 +45,72 @@ export function isSafeText(text, config) {
 
 const ROUTINE_COMMIT = /^(?:chore|docs|ci|test|style|build|merge|revert|wip|bump)\b/i
 
-// 從一個 repo 最近的 commit 裡挑一筆值得放上開發日誌的：
-// 跳過例行維護、含敏感字樣的、和別的專案重複的訊息
-export function pickUpdate(commits, config, used = new Set()) {
-  return (
-    commits.find(
-      (commit) =>
-        commit.message &&
-        !ROUTINE_COMMIT.test(commit.message) &&
-        isSafeText(commit.message, config) &&
-        !used.has(commit.message),
-    ) ?? null
-  )
+// 開發日誌：把各專案的 commit 合成一條時間線。
+// 跳過例行維護、含敏感字樣的；同一句訊息出現在好幾個專案只留最新的一筆
+export function buildLog(entries, config, limit = 60) {
+  const seen = new Set()
+  return [...entries]
+    .filter((entry) => entry.message && entry.date && !ROUTINE_COMMIT.test(entry.message) && isSafeText(entry.message, config))
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .filter((entry) => {
+      if (seen.has(entry.message)) return false
+      seen.add(entry.message)
+      return true
+    })
+    .slice(0, limit)
+}
+
+// 首頁用：每個專案只取最新的一筆
+export function latestPerRepo(log, count = 5) {
+  const seen = new Set()
+  return log
+    .filter((entry) => {
+      if (seen.has(entry.name)) return false
+      seen.add(entry.name)
+      return true
+    })
+    .slice(0, count)
+}
+
+export function groupByDay(log) {
+  const days = new Map()
+  for (const entry of log) {
+    const day = entry.date.slice(0, 10)
+    days.set(day, [...(days.get(day) ?? []), entry])
+  }
+  return [...days].map(([date, entries]) => ({ date, entries }))
+}
+
+// 固定種子的亂數，讓裝飾圖每次 build 長得一樣
+export function seededRandom(seed) {
+  let state = seed >>> 0
+  return () => {
+    state = (state + 0x6d2b79f5) | 0
+    let t = Math.imul(state ^ (state >>> 15), 1 | state)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+// 馬賽克邊條：一排排小方塊，越靠近底部越密，像頭貼那隻貓的像素散開來
+export function mosaicCells({ seed = 1, cols = 160, rows = 6, palette }) {
+  const random = seededRandom(seed)
+  const cells = []
+  for (let row = 0; row < rows; row += 1) {
+    const density = ((row + 1) / rows) ** 1.7
+    for (let col = 0; col < cols; col += 1) {
+      const roll = random()
+      const color = palette[Math.floor(random() * palette.length)]
+      if (roll < density * 0.92) cells.push({ col, row, color })
+    }
+  }
+  return cells
+}
+
+export function colorFor(name, palette) {
+  let hash = 0
+  for (const char of String(name)) hash = (hash * 31 + char.codePointAt(0)) >>> 0
+  return palette[hash % palette.length]
 }
 
 export function toProject(repo, config) {
