@@ -605,6 +605,21 @@ a.card:hover {
   }
 }
 
+/* 三張並排時，黑卡那隻也一起破格。較窄時黑卡在上面一排，破出去會壓到下面兩張，所以不破 */
+@media (min-width: 1140px) {
+  .hero-grid .with-avatar {
+    overflow: visible;
+  }
+
+  .hero-grid .with-avatar .avatar {
+    height: 212px;
+    right: -10px;
+    bottom: -84px;
+    z-index: 2;
+    filter: drop-shadow(0 14px 16px rgb(22 20 15 / 0.22));
+  }
+}
+
 /* 中間寬度三張並排會擠到貼紙，改成大卡一整排、兩張小卡各半 */
 @media (min-width: 620px) and (max-width: 1139px) {
   .hero-grid {
