@@ -24,7 +24,9 @@ build 會用 `GITHUB_TOKEN` 環境變數，沒有就用 `gh auth token`。token 
 
 ## 改內容
 
-全部在 `site.config.json`：
+每個專案的一句說明在 `descriptions.json`，直接改那個檔；沒列到的專案會用 GitHub 上的描述。
+
+其他都在 `site.config.json`：
 
 | 欄位 | 用途 |
 |---|---|
@@ -32,7 +34,6 @@ build 會用 `GITHUB_TOKEN` 環境變數，沒有就用 `gh auth token`。token 
 | `avatar`、`palette` | 頭貼檔名（放在 `src/`）與馬賽克裝飾用的顏色 |
 | `links` | GitHub、Email、Instagram、Threads。留空就不顯示 |
 | `home` | 首頁作品區放哪些專案（`lead` 大卡、`dark` 深色卡、`small` 小卡、三棟、kit、自架清單） |
-| `blurbs` | 專案的中文說明。沒寫就用 GitHub 上的描述 |
 | `categoryOf` | 指定專案屬於哪一類。沒指定的照名稱與語言自動分 |
 | `hide` | 不顯示的專案（正規表示式，比對名稱） |
 | `redact` | 出現這些字樣的描述、網址、commit 訊息整段不用（私人網域、本機位址、IP） |

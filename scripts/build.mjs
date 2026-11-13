@@ -20,6 +20,12 @@ const LOG_REPOS = 14
 const COMMITS_PER_REPO = 12
 
 const config = JSON.parse(readFileSync(join(root, 'site.config.json'), 'utf8'))
+// 每個專案的一句說明集中在 descriptions.json（底線開頭的鍵是給人看的註解）
+const descriptionsFile = join(root, 'descriptions.json')
+if (existsSync(descriptionsFile)) {
+  const entries = Object.entries(JSON.parse(readFileSync(descriptionsFile, 'utf8'))).filter(([name]) => !name.startsWith('_'))
+  config.blurbs = { ...Object.fromEntries(entries), ...(config.blurbs ?? {}) }
+}
 
 // 最近有動的專案各抓幾筆 commit，之後合成開發日誌
 async function fetchCommits(projects, token) {

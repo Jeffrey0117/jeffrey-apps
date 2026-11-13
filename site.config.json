@@ -120,26 +120,9 @@
       "meei"
     ],
     "kit": [
-      "kit-kit"
+      "kit-kit",
+      "media-gate"
     ]
-  },
-  "blurbs": {
-    "SpeakSlow": "專為中文打造的本地語音輸入。100% 本機、不上雲，講完直接貼到游標處，特別適合用語音跟 AI 對話。",
-    "ClaudeBot": "手機上的 Claude Code 指揮中心。Telegram 機器人，有外掛系統、多 bot、佇列、串流回覆與熱重載。",
-    "Pokkit": "隨手丟檔案、拿短網址分享。自架，分享連結可設密碼與期限，大檔分段上傳。",
-    "RePic": "本機看圖、批次縮圖。",
-    "ReVid": "本機看片、空間裁切。RePic 的姊妹作。",
-    "MemoryGuy": "系統資源監控，抓記憶體洩漏，一鍵釋放。",
-    "pdfluv2": "丟進英文 PDF，拿回排版好的中文 PDF。",
-    "PyClick": "看到圖就點過去的 Windows 自動點擊器。",
-    "RawTxt": "貼文字拿網址，餵給 AI 用。",
-    "MySpeedTest": "5 秒出結果的網速測試。",
-    "lanpai-overlay": "把文字和圖片直接釘在螢幕上。",
-    "Selfize": "自架的 SQLite REST API，動態資料表、每筆資料有擁有者。",
-    "SelfBase": "自架的 PostgreSQL 備份、還原與保留期限。",
-    "LetMeUse": "登入、廣告、計費的共用後台。",
-    "areyoubot": "自架的工作量證明驗證碼，取代 reCAPTCHA。",
-    "Workr": "背景工作的通用佇列平台。"
   },
   "home": {
     "lead": "SpeakSlow",
@@ -194,7 +177,9 @@
     "^test$",
     "^hihi$",
     "^yoni$",
-    "^loan$"
+    "^loan$",
+    "^hahow-collecter$",
+    "^julianews$"
   ],
   "redact": [
     "isnow[a-z]+",
