@@ -541,6 +541,99 @@ a.card:hover {
   color: var(--accent);
 }
 
+/* ── 專案卡片的底圖（src/img/cards/<專案名>.*）─────────
+   暗底、角色在右半邊。電腦上整張當底，文字放左邊；手機上圖放在文字下面 */
+.dark-card.has-art {
+  background-color: #0e0a0c;
+  border-color: #0e0a0c;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: auto 210px;
+  padding-bottom: 222px;
+}
+
+@media (min-width: 620px) {
+  .dark-card.has-art {
+    background-size: cover;
+    background-position: right 35%;
+    min-height: 330px;
+    padding-bottom: 22px;
+  }
+
+  .dark-card.has-art p:not(.label) {
+    max-width: 52%;
+  }
+
+  /* 星數和標籤跟在說明下面，不要沉到卡片底部壓在圖上 */
+  .dark-card.has-art .meta {
+    margin-top: 4px;
+  }
+}
+
+/* ── 教學、關於我 ─────────────────────────────────── */
+.guides-page .card,
+.guide-page .card,
+.about-page .card,
+.about-banner,
+.about-stats {
+  margin-top: 18px;
+}
+
+.guide-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.guide-card time {
+  font: 500 12.5px/1.4 var(--mono);
+}
+
+.prose .page-title {
+  font-size: clamp(26px, 4.2vw, 36px);
+  margin-bottom: 4px;
+}
+
+.guide-date {
+  font: 500 13px/1.4 var(--mono);
+  margin-top: 0;
+}
+
+.guide-page .more-link {
+  margin-top: 20px;
+}
+
+.guide-page .more-link svg {
+  transform: rotate(180deg);
+}
+
+.about-banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.about-stats {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.about-stats .card {
+  margin-top: 0;
+}
+
+.about-stats .big {
+  font-size: clamp(30px, 6vw, 46px);
+}
+
+@media (max-width: 520px) {
+  .about-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ── 作品介紹頁 ───────────────────────────────────── */
 .crumbs {
   display: flex;
@@ -1405,7 +1498,27 @@ a.row:hover strong {
   }
 
   .nav a {
-    padding: 5px 10px;
+    padding: 5px 9px;
+  }
+
+  /* 手機上選單項目變多，放不下時可以左右滑，不把整頁撐寬 */
+  .nav {
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    font-size: 13.5px;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wordmark {
+    height: 16px;
+  }
+
+  .topbar .brand.has-wordmark {
+    padding: 10px 12px;
   }
 
   .nav a[rel] {

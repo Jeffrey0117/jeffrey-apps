@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
-  buildLog, buildProjects, categorize, cleanText, colorFor, groupByDay, isSafeText, isVisible, languageCounts,
+  buildLog, buildProjects, categorize, cleanText, colorFor, firstReadmeImage, groupByDay, isSafeText, isVisible, languageCounts,
   latestPerRepo, recentActivity, scoreLogoPath, seededRandom, summarize, toProject, wordmarkCells,
 } from '../scripts/model.mjs'
-import { esc, renderDevlog, renderHome, renderProject, renderWork } from '../scripts/render.mjs'
+import { esc, renderAbout, renderDevlog, renderGuide, renderGuides, renderHome, renderProject, renderWork } from '../scripts/render.mjs'
 
 const config = {
   user: 'someone',
@@ -141,11 +141,27 @@ test('scoreLogoPath picks real logos and ignores look-alikes', () => {
   for (const path of [
     'public/favicon.png', 'public/vite.png', 'src/assets/react.png', 'node_modules/x/logo.png',
     'docs/screenshot.png', 'assets/demo.png', 'assets/tray-icon.png', 'assets/wechat-qrcode.png',
-    'logo.svg', 'logo.ico', 'README.md', 'src/logo.ts', 'test/fixtures/logo.png',
+    'logo.ico', 'README.md', 'src/logo.ts', 'test/fixtures/logo.png', '.history/logo_2025.svg',
   ]) {
     assert.equal(score(path), 0, path)
   }
   assert.equal(score('logo.png', 300), 0) // 太小
+  // SVG 是向量，很小也可以是完整的標誌；太大的多半是插畫
+  assert.ok(score('app/icon.svg', 529) > 0)
+  assert.equal(score('app/icon.svg', 100), 0)
+  assert.equal(score('art/logo.svg', 200_000), 0)
+
+  // README 第一張圖是最強的線索，但要看起來像標誌才算
+  const withReadme = (path, readme, repo = 'DuckShot') => scoreLogoPath(path, 20_000, repo, readme)
+  assert.ok(withReadme('assets/icons/app-icon.png', 'assets/icons/app-icon.png') > withReadme('assets/icons/logo-other.png', 'assets/icons/app-icon.png'))
+  assert.ok(withReadme('where.png', 'where.png', 'whereismywindow') > 0) // 檔名是專案名的開頭
+  assert.equal(withReadme('assets/preview-v2.png', 'assets/preview-v2.png'), 0) // 預覽圖不是標誌
+  assert.equal(withReadme('shot.png', 'shot.png'), 0)
+
+  assert.equal(firstReadmeImage('<p align="center"><img src="./app/icon.svg" width="80"></p>'), 'app/icon.svg')
+  assert.equal(firstReadmeImage('![badge](https://img.shields.io/x.svg) ![logo](/assets/logo.png?raw=true)'), 'assets/logo.png')
+  assert.equal(firstReadmeImage('![shot](https://i.imgur.com/a.png)'), '')
+  assert.equal(firstReadmeImage(''), '')
 })
 
 test('toProject prefers the configured blurb and a real homepage', () => {
@@ -256,6 +272,38 @@ test('pages render the data and escape anything that came from outside', () => {
   assert.match(withArticle, /href="https:\/\/github\.com\/someone\/foo-kit#readme"/)
   const tool = projects.find((project) => project.name === 'cli-thing')
   assert.match(renderProject(data, tool), /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
+
+  // 教學：沒文章時是空狀態；有文章時列表連到各篇，單篇有標題、日期、內文
+  const emptyGuides = renderGuides(data)
+  assert.match(emptyGuides, /目前還沒有發布的文章/)
+  assert.match(emptyGuides, /href="\.\.\/guides\/" aria-current="page"/)
+  const guide = { slug: 'voice-coding', title: '用語音寫 <程式>', date: '2026-11-13', summary: '三個步驟', html: '<p>內文</p>' }
+  const guideList = renderGuides({ ...data, guides: [guide] })
+  assert.match(guideList, /class="card guide-card" href="\.\/voice-coding\/"/)
+  assert.match(guideList, /用語音寫 &lt;程式&gt;/)
+  assert.match(guideList, /2026 年 11 月 13 日/)
+  assert.ok(!guideList.includes('目前還沒有發布的文章'))
+  const guidePage = renderGuide(data, guide)
+  assert.match(guidePage, /<h1 class="page-title">用語音寫 &lt;程式&gt;<\/h1>/)
+  assert.match(guidePage, /<p>內文<\/p>/)
+  assert.match(guidePage, /href="\.\.\/\.\.\/assets\/site\.css"/)
+  assert.match(guidePage, /href="\.\.\/">教學<\/a>/)
+
+  // 關於我：內文來自 pages/about.md，數字和做事的方式自動產生；首頁用同一份做事的方式
+  const about = renderAbout({ ...data, about: { title: '關於我', html: '<p>我是誰</p>' } })
+  assert.match(about, /<h1 class="page-title">關於我<\/h1>\s*<p>我是誰<\/p>/)
+  assert.match(about, /<span class="big">3<small>件<\/small>/)
+  assert.match(about, /自己架。/)
+  assert.match(home, /自己架。/)
+  assert.match(about, /href="\.\.\/me\/" aria-current="page"/)
+  assert.ok(!about.includes('about-banner'))
+  assert.match(renderAbout({ ...data, images: { about: 'img/about.webp' } }), /class="about-banner" src="\.\.\/assets\/img\/about\.webp"/)
+  assert.match(renderAbout(data), /<h1 class="page-title">關於我<\/h1>/) // 沒有內文也有標題
+
+  // 專案卡片的底圖
+  const withCard = renderHome({ ...data, images: { cards: { 'cli-thing': 'img/cards/cli-thing.webp' } } })
+  assert.match(withCard, /class="card ink dark-card has-art" href="\.\/work\/cli-thing\/" style="background-image:url\('\.\/assets\/img\/cards\/cli-thing\.webp'\)"/)
+  assert.ok(!home.includes('dark-card has-art'))
 
   // 圖片插槽：沒圖時什麼都不多；有圖時背景、吉祥物、截圖、分享圖各就各位
   assert.ok(!home.includes('has-bg') && !home.includes('class="cat') && !home.includes('og:image'))

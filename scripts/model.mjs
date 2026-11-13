@@ -125,22 +125,30 @@ export function wordmarkCells(text, { seed = 1, palette }) {
 
 // 判斷 repo 裡的某個檔案像不像這個專案的 logo。分數越高越像，0 以下就不用。
 // 只認名字明確是 logo / icon 的檔案：favicon 和框架附的預設圖（vite.svg 之類）太容易抓到不是自己的東西
-export function scoreLogoPath(path, size, repoName = '') {
+// readmeImage：README 裡第一張圖的 repo 內路徑。作者會把 logo 放在 README 最上面，
+// 所以它如果看起來像標誌（檔名有 logo/icon，或檔名就是專案名的開頭），就是最強的線索
+export function scoreLogoPath(path, size, repoName = '', readmeImage = '') {
   const lower = path.toLowerCase()
   const file = lower.slice(lower.lastIndexOf('/') + 1)
   const dot = file.lastIndexOf('.')
   if (dot <= 0) return 0
   const ext = file.slice(dot + 1)
   const stem = file.slice(0, dot)
-  if (!['png', 'webp', 'jpg', 'jpeg'].includes(ext)) return 0
+  if (!['png', 'webp', 'jpg', 'jpeg', 'svg'].includes(ext)) return 0
+  if (/(^|\/)\.[^/]+\//.test(lower)) return 0 // .history/ 之類的隱藏資料夾
   if (/(^|\/)(node_modules|vendor|dist|build\/static|\.next|coverage|test|tests|__tests__|fixtures|examples?|screenshots?|samples?)\//.test(lower)) return 0
   if (/^(vite|react|next|vercel|nuxt|svelte|astro|webpack|electron|tauri|github|placeholder)$/.test(stem)) return 0
   if (/tray|badge|sprite|banner|cover|screenshot|preview|demo|qrcode|qr-|avatar|background|splash|og[-_.]|social/.test(stem)) return 0
-  if (size > 0 && size < 800) return 0 // 太小，多半是 16×16 的東西
+  // 太小的點陣圖多半是 16×16 的東西；SVG 是向量，幾百個位元組也可以是完整的標誌
+  if (size > 0 && size < (ext === 'svg' ? 150 : 800)) return 0
+  if (ext === 'svg' && size > 80_000) return 0 // 太大的 SVG 多半是插畫，不是標誌
 
   const repo = repoName.toLowerCase()
+  const isReadmeImage = Boolean(readmeImage) && lower === readmeImage.toLowerCase()
+  const looksLikeMark = /logo|icon/.test(stem) || (stem.length >= 4 && repo.startsWith(stem))
   let score = 0
-  if (stem === 'logo' || stem === `${repo}-logo` || stem === `${repo}_logo`) score = 100
+  if (isReadmeImage && looksLikeMark) score = 130
+  else if (stem === 'logo' || stem === `${repo}-logo` || stem === `${repo}_logo`) score = 100
   else if (stem.includes('logo')) score = 85
   else if (stem === 'icon' || stem === 'app-icon' || stem === 'appicon' || stem === `${repo}-icon`) score = 70
   else if (/^icon[-_@]?(512|256|1024|192|128)/.test(stem) || /(512|256|1024)x\1/.test(stem)) score = 60
@@ -149,9 +157,20 @@ export function scoreLogoPath(path, size, repoName = '') {
 
   if (/(^|[-_@x])(16|24|32|48)([-_@x.]|$)/.test(stem)) score -= 30
   if (/dark|white|mono|small|mini/.test(stem)) score -= 8
-  score += { png: 10, webp: 8, jpg: 2, jpeg: 2 }[ext]
+  score += { png: 10, svg: 9, webp: 8, jpg: 2, jpeg: 2 }[ext]
   score -= (lower.split('/').length - 1) * 4 // 放得越深越不像是主要的 logo
   return score
+}
+
+// 從 README 的內容找出第一張「放在 repo 裡」的圖，回傳它的 repo 內路徑；外部網址（徽章、圖床）不算
+export function firstReadmeImage(markdown) {
+  const pattern = /<img[^>]+src=["']([^"']+)["']|!\[[^\]]*\]\(([^)\s]+)/gi
+  for (const match of String(markdown ?? '').matchAll(pattern)) {
+    const src = (match[1] || match[2]).trim()
+    if (/^([a-z][a-z0-9+.-]*:)?\/\//i.test(src) || /^data:/i.test(src)) continue
+    return src.replace(/[?#].*$/, '').replace(/^\.?\//, '')
+  }
+  return ''
 }
 
 export function colorFor(name, palette) {

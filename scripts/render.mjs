@@ -79,6 +79,8 @@ function layout({ config, root, title, description, active, body, asOf, images, 
     { id: 'home', label: '首頁', href: `${root}` },
     { id: 'work', label: '作品', href: `${root}work/` },
     { id: 'devlog', label: '日誌', href: `${root}devlog/` },
+    { id: 'guides', label: '教學', href: `${root}guides/` },
+    { id: 'me', label: '關於', href: `${root}me/` },
   ]
   const { github, email, instagram, threads } = config.links
   const socials = [
@@ -127,6 +129,8 @@ ${body}
       <a href="${root}">首頁</a>
       <a href="${root}work/">全部作品</a>
       <a href="${root}devlog/">開發日誌</a>
+      <a href="${root}guides/">教學</a>
+      <a href="${root}me/">關於我</a>
       ${socials.join('\n      ')}
     </nav>
   </div>
@@ -144,6 +148,16 @@ ${body}
 </html>
 `
 }
+
+// 「做事的方式」：首頁的工具區和關於我頁共用
+const PRINCIPLES = [
+  ['自己架。', '儲存、資料庫、登入、驗證碼都有自架版本，不被平台綁住。'],
+  ['抽成 kit。', '兩個專案都會用到的東西就抽出來，零依賴，改一次全部升級。'],
+  ['本機優先。', '語音輸入、看圖看片都在自己的電腦上跑，不上雲。'],
+  ['公開原始碼。', '做出來的東西大多放在 GitHub。'],
+]
+const principlesList = () =>
+  `<ul class="principles">\n${PRINCIPLES.map(([title, text]) => `          <li><strong>${title}</strong>${text}</li>`).join('\n')}\n        </ul>`
 
 const sectionHead = (number, label, heading, extra = '') => `
     <div class="section-head">
@@ -194,6 +208,11 @@ export function renderHome(data) {
     images.cat[slot] ? `<img class="cat cat-${slot}" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
   const shotOf = (name) => {
     const file = images.shots[String(name).toLowerCase()]
+    return file ? asset(file) : ''
+  }
+  // 專案卡片的底圖：src/img/cards/<專案名>.*
+  const cardArt = (name) => {
+    const file = images.cards?.[String(name).toLowerCase()]
     return file ? asset(file) : ''
   }
   const find = (name) => projects.find((project) => project.name.toLowerCase() === String(name).toLowerCase())
@@ -280,7 +299,7 @@ ${band('work')}
       }
       ${
         dark
-          ? `<a class="card ink dark-card" href="${projectHref(dark.name)}">
+          ? `<a class="card ink dark-card${cardArt(dark.name) ? ' has-art' : ''}" href="${projectHref(dark.name)}"${cardArt(dark.name) ? ` style="background-image:url('${cardArt(dark.name)}')"` : ''}>
         <p class="label">開源・GitHub</p>
         <h3 class="with-logo">${logoOf(dark.name) ? mono(dark.name) : ''}${esc(dark.name)}</h3>
         <p>${esc(dark.blurb)}</p>
@@ -363,12 +382,7 @@ ${band('tools')}
       </div>
       <div class="card">
         <h3>做事的方式</h3>
-        <ul class="principles">
-          <li><strong>自己架。</strong>儲存、資料庫、登入、驗證碼都有自架版本，不被平台綁住。</li>
-          <li><strong>抽成 kit。</strong>兩個專案都會用到的東西就抽出來，零依賴，改一次全部升級。</li>
-          <li><strong>本機優先。</strong>語音輸入、看圖看片都在自己的電腦上跑，不上雲。</li>
-          <li><strong>公開原始碼。</strong>做出來的東西大多放在 GitHub。</li>
-        </ul>
+        ${principlesList()}
       </div>
     </div>
   </div>
@@ -444,6 +458,140 @@ export function renderDevlog(data) {
     title: `開發日誌｜${config.name ?? config.brand}`,
     description: `${config.name ?? ''} 各個公開專案的最近更新。`,
     active: 'devlog',
+    body,
+    asOf,
+    images: data.images,
+    version: data.version,
+  })
+}
+
+const longDate = (iso) => {
+  const date = new Date(`${String(iso).slice(0, 10)}T00:00:00Z`)
+  return Number.isNaN(date.getTime()) ? '' : `${date.getUTCFullYear()} 年 ${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`
+}
+
+// 教學列表：/guides/。文章來自 guides/*.md
+export function renderGuides(data) {
+  const { config, guides = [], asOf } = data
+  palette = paletteOf(config)
+  useLogos(data, '../assets/', '../work/')
+
+  const body = `
+<section class="band band-intro guides-page">
+  <div class="wrap narrow">
+    <p class="eyebrow"><span>教學</span>實用教學</p>
+    <h1 class="page-title">教學</h1>
+    <p class="lede">把做東西時學到的事寫下來。</p>
+    ${
+      guides.length === 0
+        ? '<div class="card"><p class="muted">目前還沒有發布的文章。</p></div>'
+        : `<div class="guide-list">
+      ${guides
+        .map(
+          (guide) => `<a class="card guide-card" href="./${encodeURIComponent(guide.slug)}/">
+        <h2 class="card-title">${esc(guide.title)}</h2>
+        ${guide.summary ? `<p>${esc(guide.summary)}</p>` : ''}
+        ${guide.date ? `<time class="muted" datetime="${esc(guide.date)}">${esc(longDate(guide.date))}</time>` : ''}
+      </a>`,
+        )
+        .join('\n      ')}
+    </div>`
+    }
+  </div>
+</section>`
+
+  return layout({
+    config,
+    root: '../',
+    title: `教學｜${config.name ?? config.brand}`,
+    description: `${config.name ?? ''} 寫的實用教學。`,
+    active: 'guides',
+    body,
+    asOf,
+    images: data.images,
+    version: data.version,
+  })
+}
+
+// 單篇教學：/guides/<檔名>/。guide.html 是 build 轉好的內文（已經過跳脫）
+export function renderGuide(data, guide) {
+  const { config, asOf } = data
+  palette = paletteOf(config)
+  useLogos(data, '../../assets/', '../../work/')
+
+  const body = `
+<section class="band band-intro guide-page">
+  <div class="wrap narrow">
+    <nav class="crumbs" aria-label="所在位置"><a href="../">教學</a><span aria-hidden="true">/</span><span>${esc(guide.title)}</span></nav>
+    <article class="card prose">
+      <h1 class="page-title">${esc(guide.title)}</h1>
+      ${guide.date ? `<p class="muted guide-date"><time datetime="${esc(guide.date)}">${esc(longDate(guide.date))}</time></p>` : ''}
+${guide.html}
+    </article>
+    <a class="more-link" href="../">${ICONS.arrow}回教學列表</a>
+  </div>
+</section>`
+
+  return layout({
+    config,
+    root: '../../',
+    title: `${guide.title}｜${config.name ?? config.brand}`,
+    description: guide.summary || guide.title,
+    active: 'guides',
+    body,
+    asOf,
+    images: data.images,
+    version: data.version,
+  })
+}
+
+// 關於我：/me/。內文來自 pages/about.md，下面接自動產生的數字、語言和做事的方式
+export function renderAbout(data) {
+  const { config, projects, summary, languages, asOf } = data
+  palette = paletteOf(config)
+  useLogos(data, '../assets/', '../work/')
+  const kits = projects.filter((project) => project.category === 'kit').length
+  const banner = data.images?.about
+  const { github, email, instagram, threads } = config.links
+
+  const body = `
+<section class="band band-intro about-page">
+  <div class="wrap narrow">
+    <p class="eyebrow"><span>關於</span>關於我</p>
+    ${banner ? `<img class="about-banner" src="${assetBase}${esc(banner)}" alt="${esc(config.wordmark ?? config.name ?? '')}">` : ''}
+    ${data.about?.html ? `<article class="card prose">\n<h1 class="page-title">${esc(data.about.title || '關於我')}</h1>\n${data.about.html}\n</article>` : `<h1 class="page-title">關於我</h1>`}
+    <div class="about-stats">
+      <a class="card stat" href="../work/"><span class="label">公開的東西</span><span class="big">${summary.projects}<small>件</small></span></a>
+      <a class="card stat" href="../work/#kit"><span class="label">Kit</span><span class="big">${kits}<small>個</small></span></a>
+      <div class="card stat"><span class="label">GitHub 星星</span><span class="big">${summary.stars}</span></div>
+    </div>
+    <div class="card">
+      <h2 class="card-title">做事的方式</h2>
+      ${principlesList()}
+    </div>
+    <div class="card">
+      <h2 class="card-title">常用的語言</h2>
+      <p class="muted">依公開專案的主要語言統計</p>
+      <div class="chips big-chips">${languages.map((language) => `<span class="chip">${esc(language.name)}<b>${language.count}</b></span>`).join('')}</div>
+    </div>
+    <div class="card">
+      <h2 class="card-title">找我</h2>
+      <div class="actions">
+        ${github ? `<a class="btn primary" href="${esc(github)}" rel="noopener">${ICONS.github}GitHub</a>` : ''}
+        ${email ? `<a class="btn" href="mailto:${esc(email)}">${esc(email)}</a>` : ''}
+        ${instagram ? `<a class="btn" href="${esc(instagram)}" rel="noopener">Instagram</a>` : ''}
+        ${threads ? `<a class="btn" href="${esc(threads)}" rel="noopener">Threads</a>` : ''}
+      </div>
+    </div>
+  </div>
+</section>`
+
+  return layout({
+    config,
+    root: '../',
+    title: `關於我｜${config.name ?? config.brand}`,
+    description: config.description,
+    active: 'me',
     body,
     asOf,
     images: data.images,

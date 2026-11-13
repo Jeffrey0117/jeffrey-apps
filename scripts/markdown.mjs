@@ -44,6 +44,26 @@ function inline(text, resolveImage) {
   return out.replace(/\u0000(\d+)\u0000/g, (_, index) => codes[Number(index)])
 }
 
+// 檔案最前面用 --- 包起來的「key: value」設定（標題、日期、摘要），跟內文分開
+export function splitFrontMatter(source) {
+  const text = String(source ?? '').replace(/\r\n?/g, '\n').replace(/^﻿/, '')
+  const match = /^---\n([\s\S]*?)\n---[ \t]*(?:\n|$)/.exec(text)
+  if (!match) return { meta: {}, body: text }
+  const meta = {}
+  for (const line of match[1].split('\n')) {
+    const pair = /^([A-Za-z][\w-]*)\s*[:：]\s*(.*)$/.exec(line.trim())
+    if (pair) meta[pair[1].toLowerCase()] = pair[2].trim().replace(/^(["'])(.*)\1$/, '$2')
+  }
+  return { meta, body: text.slice(match[0].length) }
+}
+
+// 內文開頭的「# 標題」拿出來當頁面標題，內文裡就不重複一次
+export function takeTitle(body) {
+  // 只在同一行裡比對（用 [ \t] 不用 \s），不然會連下一行的空行一起吃掉
+  const match = /^\s*#[ \t]+(.+?)[ \t]*#*[ \t]*(?:\n|$)/.exec(String(body ?? ''))
+  return match ? { title: match[1].trim(), body: body.slice(match[0].length) } : { title: '', body: String(body ?? '') }
+}
+
 export function renderMarkdown(source, { resolveImage = (src) => src } = {}) {
   const lines = String(source ?? '').replace(/\r\n?/g, '\n').split('\n')
   const html = []

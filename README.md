@@ -5,6 +5,8 @@ htmlcat 切版職人的作品站。內容不是手寫的：build 時從 GitHub �
 - 首頁：自我介紹 → 作品 → 最近在忙什麼 → 工具 → 聯絡
 - `/devlog/`：開發日誌，各專案的更新合成一條時間線
 - `/work/<專案名>/`：每個作品自己的介紹頁。想多寫就放 `content/<專案名>.md`，寫法見 `content/_怎麼寫文章.md`
+- `/guides/`：教學。文章放 `guides/<檔名>.md`，寫法見 `guides/_怎麼寫教學.md`
+- `/me/`：關於我。內文在 `pages/about.md`
 - `/work/`：全部作品，可依類型篩選（`/work/#kit` 直接帶到某一類）
 
 ## 指令
@@ -51,6 +53,8 @@ scripts/github.mjs  GitHub API（只讀公開資料）
 scripts/model.mjs   分類、過濾、統計（純函式）
 scripts/render.mjs  HTML 樣板
 scripts/markdown.mjs 文章用的 Markdown 轉換（零依賴）
+guides/             教學文章（<檔名>.md）
+pages/about.md      關於我的內文
 content/            作品介紹文章（<專案名>.md）與文章用的圖（img/）
 scripts/serve.mjs   本機預覽
 src/                site.css、site.js

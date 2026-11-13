@@ -5,11 +5,11 @@
 // 先跑過一次 npm run build（要用它快取的專案清單）。
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { findToken } from './github.mjs'
-import { buildProjects, scoreLogoPath } from './model.mjs'
+import { buildProjects, firstReadmeImage, scoreLogoPath } from './model.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = join(root, 'src', 'img', 'logos')
@@ -42,9 +42,16 @@ async function listFiles(name) {
   return (body.tree ?? []).filter((entry) => entry.type === 'blob')
 }
 
-function pickLogo(files, name) {
+async function readmeImage(name) {
+  const res = await fetch(`https://api.github.com/repos/${config.user}/${name}/readme`, { headers, signal: AbortSignal.timeout(30_000) })
+  if (!res.ok) return ''
+  const body = await res.json()
+  return firstReadmeImage(Buffer.from(body.content ?? '', 'base64').toString('utf8'))
+}
+
+function pickLogo(files, name, fromReadme) {
   const scored = files
-    .map((file) => ({ path: file.path, score: scoreLogoPath(file.path, file.size ?? 0, name) }))
+    .map((file) => ({ path: file.path, score: scoreLogoPath(file.path, file.size ?? 0, name, fromReadme) }))
     .filter((file) => file.score > 0)
     .sort((a, b) => b.score - a.score || a.path.length - b.path.length)
   return scored[0]?.path ?? null
@@ -85,13 +92,15 @@ for (const project of projects) {
     continue
   }
   try {
-    const path = pickLogo(await listFiles(project.name), project.name)
+    const path = pickLogo(await listFiles(project.name), project.name, await readmeImage(project.name))
     if (!path) {
       missing.push(project.name)
       continue
     }
     const source = await download(project.name, path)
-    convert(source, join(outDir, `${project.name}.webp`))
+    // SVG 是向量圖，直接用原檔（瀏覽器會自己畫，放大也不糊）；點陣圖才縮成小圖
+    if (/\.svg$/i.test(path)) copyFileSync(source, join(outDir, `${project.name}.svg`))
+    else convert(source, join(outDir, `${project.name}.webp`))
     found.push(`${project.name} ← ${path}`)
   } catch (error) {
     failed.push(`${project.name}：${String(error.message).split('\n')[0]}`)

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { renderMarkdown } from '../scripts/markdown.mjs'
+import { renderMarkdown, splitFrontMatter, takeTitle } from '../scripts/markdown.mjs'
 
 test('headings, paragraphs, lists, quotes, rules and code blocks', () => {
   const html = renderMarkdown(
@@ -54,6 +54,18 @@ test('raw HTML is shown as text and unsafe links are dropped', () => {
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
   assert.ok(!html.includes('javascript:') && !html.includes('evil.example'))
   assert.match(html, /點我 也點我 <a href="\.\.\/Pokkit\/">站內<\/a>/)
+})
+
+test('front matter and the leading title are separated from the body', () => {
+  const { meta, body } = splitFrontMatter('---\ntitle: "怎麼用語音寫程式"\ndate: 2026-11-13\nsummary：三步驟\n---\n# 內文標題\n\n第一段')
+  assert.deepEqual(meta, { title: '怎麼用語音寫程式', date: '2026-11-13', summary: '三步驟' })
+  assert.deepEqual(takeTitle(body), { title: '內文標題', body: '\n第一段' })
+
+  // 沒有設定區塊：整份都是內文。內文中間的 --- 是分隔線，不是設定
+  assert.deepEqual(splitFrontMatter('# 標題\n\n---\n\n內文').meta, {})
+  assert.equal(splitFrontMatter('# 標題\n\n---\n\n內文').body, '# 標題\n\n---\n\n內文')
+  assert.deepEqual(takeTitle('沒有標題的內文'), { title: '', body: '沒有標題的內文' })
+  assert.deepEqual(splitFrontMatter(null), { meta: {}, body: '' })
 })
 
 test('empty input renders nothing', () => {
