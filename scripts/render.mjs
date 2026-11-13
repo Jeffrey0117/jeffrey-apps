@@ -1,12 +1,23 @@
 // HTML 樣板。所有來自外部的文字都過 esc()。
 
-import { colorFor, groupByDay, mosaicCells } from './model.mjs'
+import { colorFor, groupByDay, mosaicCells, wordmarkCells } from './model.mjs'
 
 const DEFAULT_PALETTE = ['#ffd84d', '#ff9ec4', '#7fd4ff', '#8be3b0', '#ffb067', '#c9a6ff', '#fff3c4']
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 const paletteOf = (config) => (config.palette?.length ? config.palette : DEFAULT_PALETTE)
 // 每個 render 函式一開始會設定，mono() 和 mosaic() 共用
 let palette = DEFAULT_PALETTE
+
+// 文字標誌：大寫點陣字，每一格一個顏色，跟頭貼那隻貓同一個做法。沒設定 wordmark 就用純文字
+function brandMark(config) {
+  if (!config.wordmark) return esc(config.brand)
+  const cell = 4
+  const { cols, rows, cells } = wordmarkCells(config.wordmark, { seed: 7, palette })
+  const rects = cells
+    .map((c) => `<rect x="${c.col * cell}" y="${c.row * cell}" width="${cell}" height="${cell}" fill="${esc(c.color)}"/>`)
+    .join('')
+  return `<svg class="wordmark" viewBox="0 0 ${cols * cell} ${rows * cell}" shape-rendering="crispEdges" role="img" aria-label="${esc(config.wordmark)}">${rects}</svg>`
+}
 
 // 馬賽克邊條。放在段落底部，方塊越往下越密
 function mosaic(seed) {
@@ -84,7 +95,7 @@ ${config.avatar ? `<link rel="icon" href="${root}assets/${esc(config.avatar)}">`
 <body>
 <a class="skip" href="#main">跳至主要內容</a>
 <header class="topbar">
-  <a class="brand" href="${root}">${esc(config.brand)}</a>
+  <a class="brand${config.wordmark ? ' has-wordmark' : ''}" href="${root}" aria-label="${esc(config.name ?? config.brand)} 首頁">${brandMark(config)}</a>
   <nav class="nav" aria-label="主選單">
     ${nav.map((item) => `<a href="${item.href}"${item.id === active ? ' aria-current="page"' : ''}>${item.label}</a>`).join('\n    ')}
     ${github ? `<a href="${esc(github)}" rel="noopener">GitHub</a>` : ''}
@@ -97,7 +108,7 @@ ${body}
 <footer class="footer">
   <div class="wrap footer-inner">
     <div>
-      <div class="brand">${esc(config.brand)}</div>
+      <div class="brand footer-brand">${brandMark(config)}</div>
       <p class="muted">${esc(config.description)}</p>
     </div>
     <nav aria-label="頁尾">
@@ -108,7 +119,11 @@ ${body}
     </nav>
   </div>
   <div class="wrap footer-note">
-    <span>數字截至 ${esc(asOf)}，由 GitHub 公開資料自動產生。</span>
+    <span>${
+      config.poweredBy?.url
+        ? `Powered by <a class="powered" href="${esc(config.poweredBy.url)}" rel="noopener">${esc(config.poweredBy.label)}</a>・`
+        : ''
+    }數字截至 ${esc(asOf)}</span>
     <span>© ${new Date(asOf).getUTCFullYear()} ${esc(config.name ?? config.brand)}</span>
   </div>
 </footer>

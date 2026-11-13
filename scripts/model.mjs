@@ -107,6 +107,37 @@ export function mosaicCells({ seed = 1, cols = 160, rows = 6, palette }) {
   return cells
 }
 
+// 5×7 的點陣字。文字標誌用它一格一格拼出來，每格上不同的顏色
+const GLYPHS = {
+  A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
+  C: ['01111', '10000', '10000', '10000', '10000', '10000', '01111'],
+  H: ['10001', '10001', '10001', '11111', '10001', '10001', '10001'],
+  L: ['10000', '10000', '10000', '10000', '10000', '10000', '11111'],
+  M: ['10001', '11011', '10101', '10101', '10001', '10001', '10001'],
+  T: ['11111', '00100', '00100', '00100', '00100', '00100', '00100'],
+}
+const GLYPH_WIDTH = 5
+const GLYPH_HEIGHT = 7
+const GLYPH_GAP = 1
+
+// 回傳 { cols, rows, cells }；沒有字型的字元會直接丟錯，免得標誌默默缺一個字
+export function wordmarkCells(text, { seed = 1, palette }) {
+  const random = seededRandom(seed)
+  const letters = [...String(text).toUpperCase()]
+  const cells = []
+  letters.forEach((letter, index) => {
+    const glyph = GLYPHS[letter]
+    if (!glyph) throw new Error(`文字標誌沒有「${letter}」這個字的點陣字`)
+    const offset = index * (GLYPH_WIDTH + GLYPH_GAP)
+    glyph.forEach((line, row) => {
+      ;[...line].forEach((bit, col) => {
+        if (bit === '1') cells.push({ col: offset + col, row, color: palette[Math.floor(random() * palette.length)] })
+      })
+    })
+  })
+  return { cols: letters.length * (GLYPH_WIDTH + GLYPH_GAP) - GLYPH_GAP, rows: GLYPH_HEIGHT, cells }
+}
+
 export function colorFor(name, palette) {
   let hash = 0
   for (const char of String(name)) hash = (hash * 31 + char.codePointAt(0)) >>> 0

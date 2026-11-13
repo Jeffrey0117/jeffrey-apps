@@ -147,6 +147,34 @@ p {
   padding: 6px 16px;
 }
 
+/* 文字標誌：黑底上的彩色點陣字，跟頭貼同一個配色邏輯 */
+.wordmark {
+  display: block;
+  height: 20px;
+  width: auto;
+}
+
+.topbar .brand.has-wordmark {
+  background: var(--band-dark);
+  border-color: var(--band-dark);
+  padding: 11px 18px;
+}
+
+.footer-brand .wordmark {
+  height: 30px;
+}
+
+.powered {
+  color: var(--band-dark-ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.powered:hover {
+  color: var(--accent);
+}
+
 .nav {
   margin: 0 auto;
   display: flex;

@@ -1,12 +1,12 @@
 {
   "user": "Jeffrey0117",
   "brand": "htmlcat.",
-  "title": "htmlcat 切版直人｜桌面 App、自架服務與開發工具",
-  "description": "htmlcat 切版直人做的東西：桌面 App、自架服務、零依賴 kit 與開發工具，原始碼大多公開在 GitHub。",
+  "title": "htmlcat 切版職人｜桌面 App、自架服務與開發工具",
+  "description": "htmlcat 切版職人做的東西：桌面 App、自架服務、零依賴 kit 與開發工具，原始碼大多公開在 GitHub。",
   "hero": {
     "lines": [
       "嗨，我是 htmlcat，",
-      "切版直人。",
+      "切版職人。",
       "一個人做一整套自己的工具。"
     ],
     "accentLine": 1,
@@ -203,7 +203,7 @@
   ],
   "hideUntouchedBefore": "2025-08-01",
   "name": "htmlcat",
-  "role": "切版直人",
+  "role": "切版職人",
   "avatar": "avatar.jpg",
   "palette": [
     "#ffd84d",
@@ -214,5 +214,10 @@
     "#c9a6ff",
     "#fff3c4"
   ],
-  "siteUrl": "https://jeffrey0117.github.io/jeffrey-apps/"
+  "siteUrl": "https://jeffrey0117.github.io/jeffrey-apps/",
+  "wordmark": "HTMLCAT",
+  "poweredBy": {
+    "label": "Classroo",
+    "url": "https://classroo.tw"
+  }
 }

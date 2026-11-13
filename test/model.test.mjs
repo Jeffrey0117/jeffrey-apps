@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   buildLog, buildProjects, categorize, cleanText, colorFor, groupByDay, isSafeText, isVisible, languageCounts,
-  latestPerRepo, mosaicCells, recentActivity, seededRandom, summarize, toProject,
+  latestPerRepo, mosaicCells, recentActivity, seededRandom, summarize, toProject, wordmarkCells,
 } from '../scripts/model.mjs'
 import { esc, renderDevlog, renderHome, renderWork } from '../scripts/render.mjs'
 
@@ -125,6 +125,12 @@ test('decoration is deterministic and stays inside the palette', () => {
   assert.ok(first.every((cell) => palette.includes(cell.color) && cell.col < 40 && cell.row < 5))
   const perRow = (row) => first.filter((cell) => cell.row === row).length
   assert.ok(perRow(4) > perRow(0)) // 越靠底部越密
+  const mark = wordmarkCells('htmlcat', { seed: 7, palette })
+  assert.equal(mark.cols, 7 * 6 - 1)
+  assert.equal(mark.rows, 7)
+  assert.ok(mark.cells.length > 60 && mark.cells.every((cell) => cell.col < mark.cols && palette.includes(cell.color)))
+  assert.deepEqual(mark, wordmarkCells('HTMLCAT', { seed: 7, palette }))
+  assert.throws(() => wordmarkCells('cat9', { palette }), /點陣字/)
   assert.equal(colorFor('Pokkit', palette), colorFor('Pokkit', palette))
   assert.ok(seededRandom(1)() < 1)
 })
@@ -192,6 +198,12 @@ test('pages render the data and escape anything that came from outside', () => {
   assert.match(devlog, /href="\.\.\/assets\/site\.css"/)
   assert.match(home, /class="mosaic"/)
   assert.match(renderDevlog({ ...data, log: [] }), /目前沒有可以顯示的更新/)
+
+  // 沒設定時用純文字站名、頁尾不出現 Powered by；設定了就是點陣字標誌加連結
+  assert.ok(home.includes('>Someone.</a>') && !home.includes('Powered by'))
+  const branded = renderHome({ ...data, config: { ...config, wordmark: 'CAT', poweredBy: { label: 'Maker', url: 'https://maker.example' } } })
+  assert.match(branded, /<svg class="wordmark"[^>]*aria-label="CAT"/)
+  assert.match(branded, /Powered by <a class="powered" href="https:\/\/maker\.example" rel="noopener">Maker<\/a>/)
 
   // 圖片插槽：沒圖時什麼都不多；有圖時背景、吉祥物、截圖、分享圖各就各位
   assert.ok(!home.includes('has-bg') && !home.includes('class="cat') && !home.includes('og:image'))
