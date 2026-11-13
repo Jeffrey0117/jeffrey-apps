@@ -211,7 +211,7 @@ export function renderHome(data) {
     images.cat[slot] ? `<img class="cat cat-${slot}" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
   // 數字卡右下角的貼紙：src/img/cat-<名稱>.*，有檔案才出現
   const sticker = (slot) =>
-    images.cat[slot] ? `<img class="sticker" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
+    images.cat[slot] ? `<img class="sticker sticker-${slot}" src="${asset(images.cat[slot])}" alt="" loading="lazy">` : ''
   const shotOf = (name) => {
     const file = images.shots[String(name).toLowerCase()]
     return file ? asset(file) : ''

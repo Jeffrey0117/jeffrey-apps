@@ -605,18 +605,17 @@ a.card:hover {
   }
 }
 
-/* 三張並排時，黑卡那隻也一起破格。較窄時黑卡在上面一排，破出去會壓到下面兩張，所以不破 */
-@media (min-width: 1140px) {
-  .hero-grid .with-avatar {
-    overflow: visible;
+/* 越往右破格越多：黑卡那隻住在卡片裡，Kit 探出一點，星星那隻整個衝出來 */
+@media (min-width: 620px) {
+  .sticker-kit {
+    height: 196px;
+    bottom: -40px;
   }
 
-  .hero-grid .with-avatar .avatar {
-    height: 212px;
-    right: -10px;
-    bottom: -84px;
-    z-index: 2;
-    filter: drop-shadow(0 14px 16px rgb(22 20 15 / 0.22));
+  .sticker-stars {
+    height: 250px;
+    right: -14px;
+    bottom: -104px;
   }
 }
 
