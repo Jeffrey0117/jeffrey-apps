@@ -2,6 +2,7 @@
 //   node scripts/build.mjs            重新抓資料
 //   node scripts/build.mjs --offline  用上次抓的資料（改版面時用，快）
 
+import { createHash } from 'node:crypto'
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -74,6 +75,13 @@ function findImages() {
   return images
 }
 
+// 樣式表與腳本的版本號 = 內容的雜湊。內容一改網址就變，瀏覽器不會拿舊的快取來配新的 HTML
+function assetVersion() {
+  const hash = createHash('sha256')
+  for (const file of ['site.css', 'site.js']) hash.update(readFileSync(join(root, 'src', file)))
+  return hash.digest('hex').slice(0, 10)
+}
+
 const raw = await loadRaw()
 const projects = buildProjects(raw.repos, config)
 const asOf = raw.fetchedAt.slice(0, 10)
@@ -88,6 +96,7 @@ const data = {
   log,
   languages: languageCounts(projects),
   images: findImages(),
+  version: assetVersion(),
   asOf,
 }
 

@@ -196,6 +196,12 @@ test('pages render the data and escape anything that came from outside', () => {
   assert.match(devlog, /11\/12（四）/)
   assert.match(devlog, /feat: &quot;quoted&quot; &lt;b&gt;/)
   assert.match(devlog, /href="\.\.\/assets\/site\.css"/)
+  // 有版本號時，三頁的樣式表和腳本網址都要帶上，瀏覽器才不會用舊快取配新 HTML
+  for (const page of [renderHome, renderWork, renderDevlog]) {
+    const html = page({ ...data, version: 'abc123' })
+    assert.match(html, /assets\/site\.css\?v=abc123"/)
+    assert.match(html, /assets\/site\.js\?v=abc123"/)
+  }
   assert.match(home, /class="mosaic"/)
   assert.match(renderDevlog({ ...data, log: [] }), /目前沒有可以顯示的更新/)
 

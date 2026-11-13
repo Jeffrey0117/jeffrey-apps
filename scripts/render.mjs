@@ -58,7 +58,8 @@ const stars = (count) => (count > 0 ? `<span class="stars">${ICONS.star}${count}
 const mono = (name) =>
   `<span class="mono-mark" style="--tile:${esc(colorFor(name, palette))}" aria-hidden="true">${esc([...name][0].toUpperCase())}</span>`
 
-function layout({ config, root, title, description, active, body, asOf, images }) {
+function layout({ config, root, title, description, active, body, asOf, images, version }) {
+  const v = version ? `?v=${esc(version)}` : ''
   const ogImage = images?.og && config.siteUrl ? `${config.siteUrl.replace(/\/$/, '')}/assets/${images.og}` : ''
   const ogTags = ogImage
     ? `<meta property="og:image" content="${esc(ogImage)}">\n<meta name="twitter:card" content="summary_large_image">`
@@ -89,7 +90,7 @@ function layout({ config, root, title, description, active, body, asOf, images }
 ${ogTags}
 <meta name="color-scheme" content="light dark">
 ${config.avatar ? `<link rel="icon" href="${root}assets/${esc(config.avatar)}">` : ''}
-<link rel="stylesheet" href="${root}assets/site.css">
+<link rel="stylesheet" href="${root}assets/site.css${v}">
 <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
@@ -127,7 +128,7 @@ ${body}
     <span>© ${new Date(asOf).getUTCFullYear()} ${esc(config.name ?? config.brand)}</span>
   </div>
 </footer>
-<script src="${root}assets/site.js" defer></script>
+<script src="${root}assets/site.js${v}" defer></script>
 </body>
 </html>
 `
@@ -384,7 +385,7 @@ ${band('contact')}
   </div>
 </section>`
 
-  return layout({ config, root: './', title: config.title, description: config.description, active: 'home', body, asOf, images })
+  return layout({ config, root: './', title: config.title, description: config.description, active: 'home', body, asOf, images, version: data.version })
 }
 
 export function renderDevlog(data) {
@@ -440,6 +441,7 @@ export function renderDevlog(data) {
     body,
     asOf,
     images: data.images,
+    version: data.version,
   })
 }
 
@@ -484,5 +486,6 @@ export function renderWork(data) {
     body,
     asOf,
     images: data.images,
+    version: data.version,
   })
 }
