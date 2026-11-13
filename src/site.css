@@ -679,6 +679,16 @@ a.card:hover {
 }
 
 /* ── 作品介紹頁 ───────────────────────────────────── */
+/* 每一塊之間的距離由這裡統一給，卡片本身不帶外距（不然放進格狀排列會錯位） */
+.project-page .wrap > * + * {
+  margin-top: 16px;
+}
+
+.project-page .wrap > .pill-title,
+.project-page .wrap > .group-head {
+  margin-top: 44px;
+}
+
 .crumbs {
   display: flex;
   flex-wrap: wrap;
@@ -688,82 +698,342 @@ a.card:hover {
   margin-bottom: 16px;
 }
 
+.crumbs.pill {
+  width: fit-content;
+  background: var(--card);
+  border-radius: 999px;
+  padding: 7px 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 0;
+}
+
 .crumbs a:hover {
   color: var(--accent);
 }
 
 .crumbs span:last-child {
   color: var(--ink);
+  font-weight: 700;
 }
 
-.project-page .card,
-.project-shot {
-  margin-top: 18px;
-}
-
-.project-page .card:first-of-type {
-  margin-top: 0;
+/* 主視覺：左邊資訊卡，右邊畫面 */
+.project-hero {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .project-head {
-  gap: 16px;
-  padding: clamp(22px, 4vw, 34px);
+  gap: 12px;
+  padding: clamp(24px, 4vw, 36px);
 }
 
-.project-title {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
+.project-icon .mono-mark {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  font-size: 30px;
+  display: grid;
 }
 
-.project-title .mono-mark {
-  width: 68px;
-  height: 68px;
-  border-radius: 16px;
-  font-size: 28px;
-}
-
-.project-title .page-title {
-  font-size: clamp(28px, 4.5vw, 40px);
-  margin-bottom: 6px;
+.project-head .page-title {
+  font-size: clamp(32px, 5vw, 46px);
+  margin: 6px 0 0;
   overflow-wrap: anywhere;
 }
 
+.tagline {
+  color: var(--accent);
+  font-size: clamp(17px, 2.2vw, 20px);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.card p.tagline {
+  color: var(--accent);
+  font-size: clamp(17px, 2.2vw, 20px);
+}
+
+.project-head .lede {
+  font-size: 15.5px;
+}
+
+.card p.note {
+  font-size: 13.5px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
 .project-head .meta {
-  margin-top: 0;
+  margin-top: 4px;
   padding-top: 0;
 }
 
-.project-shot {
+.project-head .actions {
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.screen-card {
+  padding: 22px;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-2);
+}
+
+.screen-card img {
   display: block;
-  width: min(560px, 100%);
+  width: 100%;
+  max-width: 460px;
   height: auto;
-  margin-left: auto;
-  margin-right: auto;
-  border: 1px solid var(--line);
   border-radius: 14px;
+  box-shadow: 0 18px 40px -20px rgb(22 20 15 / 0.45);
+}
+
+@media (min-width: 860px) {
+  .project-hero.has-screen {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* 段落標題：一塊白色膠囊 */
+.pill-title {
+  width: fit-content;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 9px 20px 11px;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 900;
+  box-shadow: var(--shadow);
+}
+
+.plain-title {
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 900;
+  margin-top: 2px;
+}
+
+/* 怎麼用：三張步驟卡，加一張墨色的重點卡 */
+.step-grid,
+.group-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.step-card {
+  position: relative;
+  padding-top: 54px;
+  gap: 6px;
+}
+
+.step-no {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  font: 800 13px/1 var(--mono);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--card));
+  padding: 6px 9px;
+  border-radius: 8px;
+}
+
+.highlight-card {
+  justify-content: center;
+  gap: 12px;
+}
+
+.highlight-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
+.highlight-card li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.highlight-card li::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  background: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* 功能分組：第一張是帶底色的引言卡 */
+.card.tint {
+  background: color-mix(in srgb, var(--accent) 9%, var(--card));
+  justify-content: flex-end;
+}
+
+.card.tint p {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* 看看畫面：橫向排開，放不下就左右滑 */
+.gallery {
+  flex-direction: row;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 22px;
+  background: var(--paper-2);
+}
+
+.gallery img {
+  flex: none;
+  width: min(440px, 78vw);
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 14px 34px -18px rgb(22 20 15 / 0.4);
+}
+
+/* 所有功能：一張大卡裡面排小格 */
+.feature-box {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.feature {
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feature h3 {
+  font-size: 15.5px;
+}
+
+.feature p {
+  font-size: 13.5px;
+}
+
+/* 常見問題：可以展開收合 */
+.faq details {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: '+';
+  font: 500 20px/1 var(--mono);
+  color: var(--muted);
+  flex: none;
+}
+
+.faq details[open] summary::after {
+  content: '−';
+}
+
+.faq details p {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+
+.bottom-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 860px) {
+  .bottom-grid:not(.single) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .card-title {
-  font-size: 17px;
-  letter-spacing: -0.01em;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.project-page .log .row {
+  align-items: baseline;
 }
 
 .project-page .log .row > span {
   flex-direction: row;
 }
 
-.related-title {
-  margin-top: 34px;
+.link-row {
+  justify-content: space-between;
 }
 
-.wall.related {
-  margin-top: 12px;
+.btn.small {
+  padding: 5px 13px;
+  font-size: 13px;
 }
 
-/* 卡片之間的上間距是給直排的大卡用的；格狀排列的小卡不要，不然第一張會跟別張錯位 */
-.project-page .wall .card {
-  margin-top: 0;
+/* 結尾：圖示、一句話、按鈕 */
+.closing-card {
+  gap: 16px;
+  padding: clamp(22px, 3.4vw, 30px);
+}
+
+.closing-card .app-head {
+  align-items: flex-start;
+}
+
+.closing-card .card-title {
+  font-size: clamp(18px, 2.4vw, 22px);
+  line-height: 1.35;
+}
+
+/* 其他作品：一排名字 */
+.others {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  padding: 16px 24px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.others a:not(.btn):hover {
+  color: var(--accent);
+}
+
+.others .btn {
+  margin-left: auto;
 }
 
 .readme-note {
@@ -777,6 +1047,11 @@ a.card:hover {
 
 .readme-note a:hover {
   color: var(--accent);
+}
+
+/* 文章放在整頁寬度裡會太寬，限制一下行長 */
+.project-page .prose {
+  max-width: 820px;
 }
 
 /* 文章內文（content/*.md 轉出來的） */

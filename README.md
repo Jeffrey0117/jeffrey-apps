@@ -4,7 +4,7 @@ htmlcat 切版職人的作品站。內容不是手寫的：build 時從 GitHub �
 
 - 首頁：自我介紹 → 作品 → 最近在忙什麼 → 工具 → 聯絡
 - `/devlog/`：開發日誌，各專案的更新合成一條時間線
-- `/work/<專案名>/`：每個作品自己的介紹頁。想多寫就放 `content/<專案名>.md`，寫法見 `content/_怎麼寫文章.md`
+- `/work/<專案名>/`：每個作品自己的介紹頁。各區塊的資料放 `content/<專案名>.json`（見 `content/_怎麼補作品頁資料.md`），長篇文章放 `content/<專案名>.md`
 - `/guides/`：教學。文章放 `guides/<檔名>.md`，寫法見 `guides/_怎麼寫教學.md`
 - `/me/`：關於我。內文在 `pages/about.md`
 - `/work/`：全部作品，可依類型篩選（`/work/#kit` 直接帶到某一類）

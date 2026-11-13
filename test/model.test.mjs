@@ -273,6 +273,51 @@ test('pages render the data and escape anything that came from outside', () => {
   const tool = projects.find((project) => project.name === 'cli-thing')
   assert.match(renderProject(data, tool), /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
 
+  // 作品頁的完整骨架：每一區有資料才出現；沒資料的短頁面不放結尾卡
+  for (const marker of ['怎麼用', '所有功能', '常見問題', '看看畫面', 'closing-card', 'class="tagline"']) {
+    assert.ok(!page.includes(marker), `沒資料時不該出現：${marker}`)
+  }
+  const detail = {
+    tagline: '一句 <標語>',
+    note: '免費',
+    highlightsTitle: '放心用',
+    cta: [{ label: '下載', url: 'https://example.com/dl' }],
+    steps: [{ title: '第一步', text: '做這個' }, { title: '第二步', text: '做那個' }],
+    highlights: ['很快'],
+    groups: { label: '能做什麼', title: '分組標題', intro: '引言', items: [{ title: '甲', text: '甲的說明' }] },
+    features: [{ title: '功能一', text: '說明一' }],
+    faq: [{ q: '要錢嗎？', a: '不用。' }, { q: '第二題', a: '答案' }],
+    guides: ['voice-coding', 'missing-guide'],
+    screens: [
+      { src: '../../assets/content/a.png', alt: '畫面一' },
+      { src: '../../assets/content/b.png', alt: '畫面二' },
+    ],
+  }
+  const full = renderProject(
+    { ...data, details: { bigapp: detail }, guides: [{ slug: 'voice-coding', title: '用語音寫程式', date: '', summary: '', html: '' }] },
+    bigApp,
+  )
+  assert.match(full, /<p class="tagline">一句 &lt;標語&gt;<\/p>/)
+  assert.match(full, /class="btn primary" href="https:\/\/example\.com\/dl" rel="noopener">下載<\/a>/)
+  assert.match(full, /class="btn" href="https:\/\/github\.com\/someone\/BigApp" rel="noopener">/) // 有下載按鈕時，原始碼退成次要
+  assert.match(full, /<span class="step-no">01<\/span>\s*<h3>第一步<\/h3>/)
+  assert.match(full, /<span class="step-no">02<\/span>/)
+  assert.match(full, /<p class="label">放心用<\/p>\s*<ul><li>很快<\/li><\/ul>/)
+  assert.match(full, /<h2 class="plain-title">分組標題<\/h2>/)
+  assert.match(full, /class="card tint"><p>引言<\/p>/)
+  assert.match(full, /<div class="card screen-card"><img src="\.\.\/\.\.\/assets\/content\/a\.png" alt="畫面一"/)
+  assert.equal((full.match(/assets\/content\/b\.png/g) ?? []).length, 1) // 第二張只在「看看畫面」出現
+  assert.match(full, /<h2 class="pill-title">看看畫面<\/h2>/)
+  assert.match(full, /<div class="feature">\s*<h3>功能一<\/h3>/)
+  assert.match(full, /<details open>\s*<summary>要錢嗎？<\/summary>/)
+  assert.equal((full.match(/<details/g) ?? []).length, 2)
+  assert.match(full, /href="\.\.\/\.\.\/guides\/voice-coding\/"/)
+  assert.ok(!full.includes('missing-guide')) // 對不上的教學不顯示
+  assert.match(full, /class="card closing-card"/)
+  assert.match(full, /<title>BigApp：一句 &lt;標語&gt;｜/)
+  // 只有一張畫面時不另外開「看看畫面」
+  assert.ok(!renderProject({ ...data, details: { bigapp: { ...detail, screens: detail.screens.slice(0, 1) } } }, bigApp).includes('看看畫面'))
+
   // 教學：沒文章時是空狀態；有文章時列表連到各篇，單篇有標題、日期、內文
   const emptyGuides = renderGuides(data)
   assert.match(emptyGuides, /目前還沒有發布的文章/)

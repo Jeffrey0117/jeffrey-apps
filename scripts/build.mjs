@@ -120,6 +120,57 @@ function loadArticles(projects) {
   return articles
 }
 
+// 作品介紹頁的結構化資料：content/<專案名>.json。
+// 欄位都可以省略，有寫的區塊才會出現在頁面上。格式說明在 content/_怎麼寫文章.md。
+// 這裡把資料整理成固定的形狀：型別不對或缺必要欄位的項目直接丟掉，樣板就不用到處防呆
+function loadDetails(projects) {
+  const dir = join(root, 'content')
+  const details = {}
+  if (!existsSync(dir)) return details
+  const names = new Map(projects.map((project) => [project.name.toLowerCase(), project.name]))
+  const text = (value) => (typeof value === 'string' ? value.trim() : '')
+  const list = (value, map) => (Array.isArray(value) ? value.map(map).filter(Boolean) : [])
+  const titled = (item) => (text(item?.title) ? { title: text(item.title), text: text(item.text) } : null)
+
+  for (const file of readdirSync(dir)) {
+    if (!/\.json$/i.test(file) || file.startsWith('_')) continue
+    const key = file.replace(/\.json$/i, '').toLowerCase()
+    if (!names.has(key)) {
+      console.warn(`content/${file} 對不上任何公開作品，沒有用到（檔名要跟 repo 名稱一樣）`)
+      continue
+    }
+    let raw
+    try {
+      raw = JSON.parse(readFileSync(join(dir, file), 'utf8'))
+    } catch (error) {
+      console.warn(`content/${file} 不是合法的 JSON，略過：${error.message}`)
+      continue
+    }
+    const groups = raw.groups && typeof raw.groups === 'object' && text(raw.groups.title)
+      ? { label: text(raw.groups.label), title: text(raw.groups.title), intro: text(raw.groups.intro), items: list(raw.groups.items, titled) }
+      : null
+    details[key] = {
+      tagline: text(raw.tagline),
+      note: text(raw.note),
+      highlightsTitle: text(raw.highlightsTitle),
+      cta: list(raw.cta, (item) => (text(item?.label) && /^https?:\/\//i.test(text(item?.url)) ? { label: text(item.label), url: text(item.url) } : null)),
+      steps: list(raw.steps, titled),
+      highlights: list(raw.highlights, text),
+      groups,
+      features: list(raw.features, titled),
+      faq: list(raw.faq, (item) => (text(item?.q) && text(item?.a) ? { q: text(item.q), a: text(item.a) } : null)),
+      guides: list(raw.guides, text),
+      // 畫面的圖放在 content/img/，資料檔裡寫 "img/檔名"
+      screens: list(raw.screens, (item) => {
+        const src = text(typeof item === 'string' ? item : item?.src)
+        if (!/^img\/[^/]+$/.test(src)) return null
+        return { src: `../../assets/content/${src.slice(4)}`, alt: text(item?.alt) || `${names.get(key)} 的畫面` }
+      }),
+    }
+  }
+  return details
+}
+
 // 教學文章：guides/<檔名>.md，檔名就是網址（/guides/<檔名>/）。
 // 開頭可以用 --- 包一段設定：title、date（YYYY-MM-DD）、summary。沒寫 title 就用內文第一個 # 標題。
 // 底線開頭的檔案不是文章。圖放 guides/img/，寫成 ![說明](img/檔名)
@@ -167,6 +218,7 @@ const data = {
   languages: languageCounts(projects),
   images: findImages(),
   articles: loadArticles(projects),
+  details: loadDetails(projects),
   guides: loadGuides(),
   about: loadAbout(),
   version: assetVersion(),
@@ -205,5 +257,5 @@ writeFileSync(join(dist, '.nojekyll'), '', 'utf8')
 
 const { cat, shots, logos, og, hero, contact } = data.images
 console.log(`圖片：${hero ? '首頁主視覺 1、' : ''}${contact ? '聯絡卡 1、' : ''}專案 logo ${Object.keys(logos).length}、吉祥物 ${Object.keys(cat).length}、截圖 ${Object.keys(shots).length}${og ? '、分享圖 1' : ''}`)
-console.log(`作品介紹頁 ${projects.length} 頁，其中 ${Object.keys(data.articles).length} 頁有文章；教學 ${data.guides.length} 篇`)
+console.log(`作品介紹頁 ${projects.length} 頁，其中 ${Object.keys(data.details).length} 頁有完整資料、${Object.keys(data.articles).length} 頁有文章；教學 ${data.guides.length} 篇`)
 console.log(`完成：${projects.length} 件作品、${data.summary.stars} 顆星、資料時間 ${asOf}${offline ? '（離線）' : ''}`)

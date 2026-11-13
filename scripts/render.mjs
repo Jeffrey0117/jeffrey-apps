@@ -621,79 +621,227 @@ function wallCard(project, groups) {
 }
 
 // 單一作品的介紹頁：/work/<專案名>/。
-// article 是 content/<專案名>.md 轉好的 HTML（由 build 提供，已經過跳脫），沒有就不顯示那一塊
+// 骨架由上到下：麵包屑 → 主視覺（資訊卡 + 畫面）→ 怎麼用 → 功能分組 → 看看畫面 → 所有功能
+//   → 文章 → 常見問題／相關教學／最近更新 → 結尾卡 → 其他作品。
+// 除了主視覺和結尾卡，每一塊都是「有資料才出現」，所以還沒補資料的專案不會有空殼。
+// 資料來源：content/<專案名>.json（detail，由 build 整理過）和 content/<專案名>.md（article，已轉成 HTML）
 export function renderProject(data, project) {
   const { config, projects, summary, log, asOf } = data
   palette = paletteOf(config)
   useLogos(data, '../../assets/', '../')
-  const groups = summary.byCategory.filter((category) => category.count > 0)
+  const groups = summary.byCategory.filter((item) => item.count > 0)
   const category = groups.find((item) => item.id === project.category)
   const key = project.name.toLowerCase()
+  const detail = data.details?.[key] ?? {}
   const article = data.articles?.[key] ?? ''
   const shot = data.images?.shots?.[key]
-  const updates = (log ?? []).filter((entry) => entry.name === project.name).slice(0, 8)
-  const related = projects.filter((other) => other.category === project.category && other.name !== project.name).slice(0, 3)
-  // 中英文之間留一個空格：「更多 Kit」「更多桌面 App」
-  const moreLabel = category ? `更多${/^[A-Za-z]/.test(category.label) ? ' ' : ''}${esc(category.label)}` : '更多作品'
+  const updates = (log ?? []).filter((entry) => entry.name === project.name).slice(0, 6)
+  const related = projects.filter((other) => other.category === project.category && other.name !== project.name).slice(0, 5)
+  const guides = (detail.guides ?? []).map((slug) => (data.guides ?? []).find((guide) => guide.slug === slug)).filter(Boolean)
+  // 畫面：資料檔指定的優先；沒有就用 src/img/shots/ 裡那一張
+  const screens = detail.screens?.length
+    ? detail.screens
+    : shot
+      ? [{ src: `${assetBase}${shot}`, alt: `${project.name} 的畫面` }]
+      : []
+  // 中英文之間留一個空格：「其他 Kit」「其他桌面 App」
+  const otherLabel = category ? `其他${/^[A-Za-z]/.test(category.label) ? ' ' : ''}${esc(category.label)}` : '其他作品'
+
+  // 按鈕：資料檔指定的行動（下載之類）排最前面，接著是原始碼和官方介紹頁
+  const cta = detail.cta ?? []
+  const buttons = (compact) =>
+    [
+      ...cta.map((item, index) => `<a class="btn${index === 0 ? ' primary' : ''}" href="${esc(item.url)}" rel="noopener">${esc(item.label)}</a>`),
+      `<a class="btn${cta.length === 0 ? ' primary' : ''}" href="${esc(project.url)}" rel="noopener">${ICONS.github}看原始碼</a>`,
+      project.homepage && !cta.some((item) => item.url === project.homepage)
+        ? `<a class="btn" href="${esc(project.homepage)}" rel="noopener">官方介紹頁${compact ? '' : ICONS.arrow}</a>`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n          ')
+
+  const hero = `
+    <div class="project-hero${screens.length ? ' has-screen' : ''}">
+      <div class="card project-head">
+        <span class="project-icon">${mono(project.name)}</span>
+        <h1 class="page-title">${esc(project.name)}</h1>
+        ${detail.tagline ? `<p class="tagline">${esc(detail.tagline)}</p>` : ''}
+        ${project.blurb ? `<p class="lede">${esc(project.blurb)}</p>` : ''}
+        ${detail.note ? `<p class="note">${esc(detail.note)}</p>` : ''}
+        <div class="meta">
+          ${stars(project.stars)}
+          ${category ? `<span class="chip">${esc(category.label)}</span>` : ''}
+          ${project.language ? `<span class="chip">${esc(project.language)}</span>` : ''}
+          <span class="chip">最後更新 ${esc(project.pushedAt.slice(0, 10))}</span>
+        </div>
+        <div class="actions">
+          ${buttons(false)}
+        </div>
+        ${cta.length === 0 ? `<p class="muted readme-note">安裝方式和完整用法寫在 <a href="${esc(project.url)}#readme" rel="noopener">GitHub 的 README</a>。</p>` : ''}
+      </div>
+      ${screens.length ? `<div class="card screen-card"><img src="${esc(screens[0].src)}" alt="${esc(screens[0].alt)}" loading="lazy"></div>` : ''}
+    </div>`
+
+  const steps = detail.steps?.length
+    ? `
+    <h2 class="pill-title">怎麼用</h2>
+    <div class="step-grid${detail.highlights?.length ? ' with-highlights' : ''}">
+      ${detail.steps
+        .map(
+          (step, index) => `<div class="card step-card">
+        <span class="step-no">${String(index + 1).padStart(2, '0')}</span>
+        <h3>${esc(step.title)}</h3>
+        <p>${esc(step.text)}</p>
+      </div>`,
+        )
+        .join('\n      ')}
+      ${
+        detail.highlights?.length
+          ? `<div class="card ink highlight-card">
+        <p class="label">${esc(detail.highlightsTitle || '重點')}</p>
+        <ul>${detail.highlights.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>
+      </div>`
+          : ''
+      }
+    </div>`
+    : ''
+
+  const featureGroups = detail.groups?.items?.length
+    ? `
+    <div class="group-head">
+      ${detail.groups.label ? `<p class="label">${esc(detail.groups.label)}</p>` : ''}
+      <h2 class="plain-title">${esc(detail.groups.title)}</h2>
+    </div>
+    <div class="group-grid">
+      ${detail.groups.intro ? `<div class="card tint"><p>${esc(detail.groups.intro)}</p></div>` : ''}
+      ${detail.groups.items
+        .map(
+          (item) => `<div class="card">
+        <h3>${esc(item.title)}</h3>
+        <p>${esc(item.text)}</p>
+      </div>`,
+        )
+        .join('\n      ')}
+    </div>`
+    : ''
+
+  // 主視覺只放第一張；有兩張以上才另外開一區把全部排出來
+  const gallery =
+    screens.length >= 2
+      ? `
+    <h2 class="pill-title">看看畫面</h2>
+    <div class="card gallery">
+      ${screens.map((screen) => `<img src="${esc(screen.src)}" alt="${esc(screen.alt)}" loading="lazy">`).join('\n      ')}
+    </div>`
+      : ''
+
+  const features = detail.features?.length
+    ? `
+    <h2 class="pill-title">所有功能</h2>
+    <div class="card feature-box">
+      ${detail.features
+        .map(
+          (feature) => `<div class="feature">
+        <h3>${esc(feature.title)}</h3>
+        <p>${esc(feature.text)}</p>
+      </div>`,
+        )
+        .join('\n      ')}
+    </div>`
+    : ''
+
+  const faq = detail.faq?.length
+    ? `<div class="card">
+        <h2 class="card-title">常見問題</h2>
+        <div class="faq">
+          ${detail.faq
+            .map(
+              (item, index) => `<details${index === 0 ? ' open' : ''}>
+            <summary>${esc(item.q)}</summary>
+            <p>${esc(item.a)}</p>
+          </details>`,
+            )
+            .join('\n          ')}
+        </div>
+      </div>`
+    : ''
+
+  const guideList = guides.length
+    ? `<div class="card">
+        <h2 class="card-title">相關教學</h2>
+        <div class="rows">
+          ${guides.map((guide) => `<a class="row link-row" href="../../guides/${encodeURIComponent(guide.slug)}/"><span><strong>${esc(guide.title)}</strong></span>${ICONS.arrow}</a>`).join('\n          ')}
+        </div>
+      </div>`
+    : ''
+
+  const updateList = updates.length
+    ? `<div class="card">
+        <div class="list-head"><h2 class="card-title">最近更新</h2><a class="btn small" href="${esc(project.url)}/commits" rel="noopener">完整紀錄</a></div>
+        <div class="rows log">
+          ${updates
+            .map(
+              (entry) => `<div class="row">
+            <time datetime="${esc(entry.date)}">${esc(shortDate(entry.date))}</time>
+            <span><span>${esc(entry.message)}</span></span>
+          </div>`,
+            )
+            .join('\n          ')}
+        </div>
+      </div>`
+    : ''
+
+  const left = [faq, guideList].filter(Boolean)
+  const right = [updateList].filter(Boolean)
+  const bottom =
+    left.length || right.length
+      ? `
+    ${faq ? '<h2 class="pill-title">還有其他問題嗎？</h2>' : ''}
+    <div class="bottom-grid${left.length && right.length ? '' : ' single'}">
+      ${left.length ? `<div class="stack">\n      ${left.join('\n      ')}\n      </div>` : ''}
+      ${right.length ? `<div class="stack">\n      ${right.join('\n      ')}\n      </div>` : ''}
+    </div>`
+      : ''
+
+  // 結尾卡是給長頁面收尾用的；短頁面（沒補資料）主視覺就在上面，再放一次只是重複
+  const isLongPage = Boolean(steps || featureGroups || features || faq || article)
+  const closing = !isLongPage
+    ? ''
+    : `
+    <div class="card closing-card">
+      <div class="app-head">
+        ${mono(project.name)}
+        <div>
+          <h2 class="card-title">${esc(project.name)}${detail.tagline ? `：${esc(detail.tagline)}` : ''}</h2>
+          <p class="muted">${esc(detail.note || project.blurb)}</p>
+        </div>
+      </div>
+      <div class="actions">
+          ${buttons(true)}
+      </div>
+    </div>`
+
+  const others = related.length
+    ? `
+    <div class="card others">
+      <span class="label">${otherLabel}</span>
+      ${related.map((other) => `<a href="${projectHref(other.name)}">${esc(other.name)}</a>`).join('\n      ')}
+      <a class="btn small" href="../${category ? `#${esc(category.id)}` : ''}">全部${ICONS.arrow}</a>
+    </div>`
+    : ''
 
   const body = `
 <section class="band band-intro project-page">
-  <div class="wrap narrow">
-    <nav class="crumbs" aria-label="所在位置"><a href="../">全部作品</a><span aria-hidden="true">/</span>${category ? `<a href="../#${esc(category.id)}">${esc(category.label)}</a><span aria-hidden="true">/</span>` : ''}<span>${esc(project.name)}</span></nav>
-    <div class="card project-head">
-      <div class="project-title">
-        ${mono(project.name)}
-        <div>
-          <h1 class="page-title">${esc(project.name)}</h1>
-          ${project.blurb ? `<p class="lede">${esc(project.blurb)}</p>` : ''}
-        </div>
-      </div>
-      <div class="meta">
-        ${stars(project.stars)}
-        ${category ? `<span class="chip">${esc(category.label)}</span>` : ''}
-        ${project.language ? `<span class="chip">${esc(project.language)}</span>` : ''}
-        <span class="chip">最後更新 ${esc(project.pushedAt.slice(0, 10))}</span>
-      </div>
-      <div class="actions">
-        <a class="btn primary" href="${esc(project.url)}" rel="noopener">${ICONS.github}看原始碼</a>
-        ${project.homepage ? `<a class="btn" href="${esc(project.homepage)}" rel="noopener">官方介紹頁${ICONS.arrow}</a>` : ''}
-      </div>
-      <p class="muted readme-note">安裝方式和完整用法寫在 <a href="${esc(project.url)}#readme" rel="noopener">GitHub 的 README</a>。</p>
-    </div>
-    ${shot ? `<img class="project-shot" src="${assetBase}${esc(shot)}" alt="${esc(project.name)} 的畫面" loading="lazy">` : ''}
-    ${article ? `<article class="card prose">\n${article}\n</article>` : ''}
-    ${
-      updates.length
-        ? `<div class="card">
-      <div class="list-head"><h2 class="card-title">最近更新</h2><a class="muted" href="${esc(project.url)}/commits" rel="noopener">全部紀錄</a></div>
-      <div class="rows log">
-        ${updates
-          .map(
-            (entry) => `<div class="row">
-          <span><span>${esc(entry.message)}</span></span>
-          <time datetime="${esc(entry.date)}">${esc(shortDate(entry.date))}</time>
-        </div>`,
-          )
-          .join('\n        ')}
-      </div>
-    </div>`
-        : ''
-    }
-    ${
-      related.length
-        ? `<h2 class="day-title related-title">${moreLabel}</h2>
-    <div class="wall related">
-      ${related.map((other) => wallCard(other, groups)).join('\n      ')}
-    </div>`
-        : ''
-    }
+  <div class="wrap">
+    <nav class="crumbs pill" aria-label="所在位置"><a href="../">全部作品</a><span aria-hidden="true">/</span>${category ? `<a href="../#${esc(category.id)}">${esc(category.label)}</a><span aria-hidden="true">/</span>` : ''}<span>${esc(project.name)}</span></nav>${hero}${steps}${featureGroups}${gallery}${features}
+    ${article ? `<article class="card prose">\n${article}\n</article>` : ''}${bottom}${closing}${others}
   </div>
 </section>`
 
   return layout({
     config,
     root: '../../',
-    title: `${project.name}｜${config.name ?? config.brand}`,
+    title: `${project.name}${detail.tagline ? `：${detail.tagline}` : ''}｜${config.name ?? config.brand}`,
     description: project.blurb || `${project.name}：${config.name ?? ''} 的作品。`,
     active: 'work',
     body,
