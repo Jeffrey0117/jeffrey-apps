@@ -1,11 +1,11 @@
 // HTML 樣板。所有來自外部的文字都過 esc()。
 
-import { colorFor, groupByDay, mosaicCells, wordmarkCells } from './model.mjs'
+import { colorFor, groupByDay, scribblePoints, wordmarkCells } from './model.mjs'
 
 const DEFAULT_PALETTE = ['#ffd84d', '#ff9ec4', '#7fd4ff', '#8be3b0', '#ffb067', '#c9a6ff', '#fff3c4']
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 const paletteOf = (config) => (config.palette?.length ? config.palette : DEFAULT_PALETTE)
-// 每個 render 函式一開始會設定，mono() 和 mosaic() 共用
+// 每個 render 函式一開始會設定，mono() 和文字標誌共用
 let palette = DEFAULT_PALETTE
 
 // 文字標誌：大寫點陣字，每一格一個顏色，跟頭貼那隻貓同一個做法。沒設定 wordmark 就用純文字
@@ -19,15 +19,12 @@ function brandMark(config) {
   return `<svg class="wordmark" viewBox="0 0 ${cols * cell} ${rows * cell}" shape-rendering="crispEdges" role="img" aria-label="${esc(config.wordmark)}">${rects}</svg>`
 }
 
-// 馬賽克邊條。放在段落底部，方塊越往下越密
-function mosaic(seed) {
-  const cell = 10
-  const cols = 180
-  const rows = 6
-  const rects = mosaicCells({ seed, cols, rows, palette })
-    .map((c) => `<rect x="${c.col * cell}" y="${c.row * cell}" width="${cell}" height="${cell}" fill="${esc(c.color)}"/>`)
-    .join('')
-  return `<svg class="mosaic" viewBox="0 0 ${cols * cell} ${rows * cell}" preserveAspectRatio="xMidYMax slice" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`
+// 蠟筆鋸齒邊：放在暗色段落的最上面、往上凸出去蓋住上一段的底部，
+// 亮轉暗的交界就不是一條直線，而是像蠟筆來回塗出來的邊
+function scribbleEdge(seed) {
+  const { width, height, points } = scribblePoints({ seed })
+  const path = `M0 ${height} ${points.map(([x, y]) => `L${x} ${y}`).join(' ')} L${width} ${height} Z`
+  return `<svg class="scribble" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}" fill="currentColor"/></svg>`
 }
 
 export const esc = (value) =>
@@ -208,8 +205,8 @@ export function renderHome(data) {
   const stages = [
     ['intro', '起點'],
     ['work', '作品'],
-    ['recent', '最近'],
     ['tools', '工具'],
+    ['recent', '最近'],
     ['contact', '聯絡'],
   ]
 
@@ -250,7 +247,6 @@ ${band('intro')}
       </div>
     </div>
   </div>
-  ${mosaic(11)}
 </section>
 
 ${band('work')}
@@ -302,11 +298,32 @@ ${band('work')}
       </a>
     </div>
   </div>
-  ${mosaic(23)}
+</section>
+
+${band('tools')}
+  <div class="wrap">${sectionHead('03', '工具', '常用的工具，<br>和做事的方式')}
+    <div class="tools-grid">
+      <div class="card">
+        <h3>常用的語言</h3>
+        <p class="muted">依公開專案的主要語言統計</p>
+        <div class="chips big-chips">${languages.map((language) => `<span class="chip">${esc(language.name)}<b>${language.count}</b></span>`).join('')}</div>
+      </div>
+      <div class="card">
+        <h3>做事的方式</h3>
+        <ul class="principles">
+          <li><strong>自己架。</strong>儲存、資料庫、登入、驗證碼都有自架版本，不被平台綁住。</li>
+          <li><strong>抽成 kit。</strong>兩個專案都會用到的東西就抽出來，零依賴，改一次全部升級。</li>
+          <li><strong>本機優先。</strong>語音輸入、看圖看片都在自己的電腦上跑，不上雲。</li>
+          <li><strong>公開原始碼。</strong>做出來的東西大多放在 GitHub。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </section>
 
 ${band('recent')}
-  <div class="wrap">${sectionHead('03', '最近', '最近在忙什麼')}
+  ${scribbleEdge(29)}
+  <div class="wrap">${sectionHead('04', '最近', '最近在忙什麼')}
     <div class="recent-grid">
       <div class="card">
         <div class="list-head"><h3><a href="./devlog/">開發日誌</a></h3><span class="muted">${activity.cells.length ? `${esc(shortDate(activity.from))} – ${esc(shortDate(activity.to))}・${activity.total} 次更新` : ''}</span></div>
@@ -345,28 +362,6 @@ ${band('recent')}
       </div>
     </div>
   </div>
-</section>
-
-${band('tools')}
-  <div class="wrap">${sectionHead('04', '工具', '常用的工具，<br>和做事的方式')}
-    <div class="tools-grid">
-      <div class="card">
-        <h3>常用的語言</h3>
-        <p class="muted">依公開專案的主要語言統計</p>
-        <div class="chips big-chips">${languages.map((language) => `<span class="chip">${esc(language.name)}<b>${language.count}</b></span>`).join('')}</div>
-      </div>
-      <div class="card">
-        <h3>做事的方式</h3>
-        <ul class="principles">
-          <li><strong>自己架。</strong>儲存、資料庫、登入、驗證碼都有自架版本，不被平台綁住。</li>
-          <li><strong>抽成 kit。</strong>兩個專案都會用到的東西就抽出來，零依賴，改一次全部升級。</li>
-          <li><strong>本機優先。</strong>語音輸入、看圖看片都在自己的電腦上跑，不上雲。</li>
-          <li><strong>公開原始碼。</strong>做出來的東西大多放在 GitHub。</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  ${mosaic(37)}
 </section>
 
 ${band('contact')}
@@ -430,7 +425,6 @@ export function renderDevlog(data) {
             .join('\n    ')
     }
   </div>
-  ${mosaic(53)}
 </section>`
 
   return layout({
@@ -475,7 +469,6 @@ export function renderWork(data) {
         .join('\n      ')}
     </div>
   </div>
-  ${mosaic(41)}
 </section>`
 
   return layout({

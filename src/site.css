@@ -214,20 +214,30 @@ p {
   padding: 56px 0 72px;
 }
 
-/* 馬賽克邊條：貼在段落底部，像頭貼那隻貓的像素散開 */
-.band:has(> .mosaic) {
-  padding-bottom: 116px;
-}
-
-.mosaic {
+/* 蠟筆鋸齒邊：暗色段落往上凸出去，蓋住上一段的底部，亮轉暗的交界不是一條直線。
+   顏色跟著所在段落的底色（currentColor）；往下多蓋 1px 免得出現細縫 */
+.scribble {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  top: -43px;
   width: 100%;
-  height: 60px;
+  height: 44px;
   display: block;
   pointer-events: none;
+  z-index: 2;
+  color: var(--band-dark);
+}
+
+.band-recent.has-bg > .scribble {
+  color: #110f19;
+}
+
+/* 首頁第一段有主視覺時用跟圖一樣的白，往下接作品區才不會有色差；
+   導覽列浮在 body 上，所以 body 也要同一個白 */
+.band-intro:has(.hero.has-art),
+body:has(.hero.has-art) {
+  background-color: #fdfdfb;
 }
 
 .wrap {
@@ -287,10 +297,6 @@ p {
 .band-work.has-bg,
 .band-tools.has-bg {
   background-color: #fdfdfb;
-}
-
-.has-bg > .mosaic {
-  display: none;
 }
 
 /* 標題直接壓在圖上會看不清楚，墊一塊底 */
@@ -407,7 +413,7 @@ p {
 /* 聯絡卡的底圖（src/img/contact.*）：暗底，角色在右半邊，文字放左上的留白。
    圖的底色取樣約 #161318，卡片和整段跟著它，接縫才看不出來 */
 .band-contact:has(.contact.has-art) {
-  background-color: #161318;
+  background-color: #110f19; /* 跟上一段（最近）同一個紫黑，兩段暗的連成一片 */
 }
 
 .contact.has-art {
@@ -1232,7 +1238,7 @@ a.row:hover strong {
 
 /* ── 頁尾 ─────────────────────────────────────────── */
 .footer {
-  background: var(--band-dark);
+  background: #110f19; /* 跟首頁最後兩段暗色同一個紫黑，一路連到底 */
   color: var(--band-dark-ink);
   --muted: var(--band-dark-muted);
   padding: 8px 0 40px;

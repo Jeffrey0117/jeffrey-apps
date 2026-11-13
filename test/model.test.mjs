@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   buildLog, buildProjects, categorize, cleanText, colorFor, groupByDay, isSafeText, isVisible, languageCounts,
-  latestPerRepo, mosaicCells, recentActivity, seededRandom, summarize, toProject, wordmarkCells,
+  latestPerRepo, recentActivity, scribblePoints, seededRandom, summarize, toProject, wordmarkCells,
 } from '../scripts/model.mjs'
 import { esc, renderDevlog, renderHome, renderWork } from '../scripts/render.mjs'
 
@@ -119,12 +119,13 @@ test('buildLog drops routine and unsafe commits, dedupes, and sorts newest first
 
 test('decoration is deterministic and stays inside the palette', () => {
   const palette = ['#111111', '#222222']
-  const first = mosaicCells({ seed: 7, cols: 40, rows: 5, palette })
-  assert.deepEqual(first, mosaicCells({ seed: 7, cols: 40, rows: 5, palette }))
-  assert.notDeepEqual(first, mosaicCells({ seed: 8, cols: 40, rows: 5, palette }))
-  assert.ok(first.every((cell) => palette.includes(cell.color) && cell.col < 40 && cell.row < 5))
-  const perRow = (row) => first.filter((cell) => cell.row === row).length
-  assert.ok(perRow(4) > perRow(0)) // 越靠底部越密
+  const edge = scribblePoints({ seed: 7, width: 400, height: 60 })
+  assert.deepEqual(edge, scribblePoints({ seed: 7, width: 400, height: 60 }))
+  assert.notDeepEqual(edge.points, scribblePoints({ seed: 8, width: 400, height: 60 }).points)
+  assert.ok(edge.points.length > 30)
+  assert.ok(edge.points.every(([x, y]) => x >= 0 && x <= 400 && y >= 0 && y <= 60))
+  assert.deepEqual(edge.points.at(-1)[0], 400) // 一路畫到最右邊，不留缺口
+  assert.ok(edge.points.every(([x], i) => i === 0 || x >= edge.points[i - 1][0])) // 只往右走，不會打結
   const mark = wordmarkCells('htmlcat', { seed: 7, palette })
   assert.equal(mark.cols, 7 * 6 - 1)
   assert.equal(mark.rows, 7)
@@ -202,7 +203,12 @@ test('pages render the data and escape anything that came from outside', () => {
     assert.match(html, /assets\/site\.css\?v=abc123"/)
     assert.match(html, /assets\/site\.js\?v=abc123"/)
   }
-  assert.match(home, /class="mosaic"/)
+  // 段落順序：亮的三段在前、暗的兩段在後，整頁只換一次底色；交界是蠟筆鋸齒邊
+  const order = [...home.matchAll(/<section id="(\w+)"/g)].map((match) => match[1])
+  assert.deepEqual(order, ['intro', 'work', 'tools', 'recent', 'contact'])
+  assert.match(home, /<section id="recent"[^>]*>\s*<svg class="scribble"/)
+  assert.equal((home.match(/class="scribble"/g) ?? []).length, 1)
+  assert.ok(!home.includes('mosaic') && !work.includes('mosaic') && !devlog.includes('mosaic'))
   assert.match(renderDevlog({ ...data, log: [] }), /目前沒有可以顯示的更新/)
 
   // 沒設定時用純文字站名、頁尾不出現 Powered by；設定了就是點陣字標誌加連結
