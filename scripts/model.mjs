@@ -153,6 +153,8 @@ export function scoreLogoPath(path, size, repoName = '', readmeImage = '') {
   else if (stem === 'icon' || stem === 'app-icon' || stem === 'appicon' || stem === `${repo}-icon`) score = 70
   else if (/^icon[-_@]?(512|256|1024|192|128)/.test(stem) || /(512|256|1024)x\1/.test(stem)) score = 60
   else if (stem === repo) score = 40
+  // 自己畫的 favicon.svg 通常就是那個專案的標誌；.ico / .png 的多半是框架預設，不收
+  else if (stem === 'favicon' && ext === 'svg') score = 35
   else return 0
 
   if (/(^|[-_@x])(16|24|32|48)([-_@x.]|$)/.test(stem)) score -= 30
