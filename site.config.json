@@ -166,6 +166,42 @@
         "areyoubot",
         "Workr"
       ]
+    },
+    "privateCard": {
+      "title": "還沒公開的專案",
+      "note": "目前自己在用，還沒公開",
+      "items": [
+        {
+          "icon": "server",
+          "title": "自架部署平台",
+          "text": "自己的 Vercel。用一個 Telegram 機器人部署、重啟、呼叫每個 app 的 API。"
+        },
+        {
+          "icon": "compass",
+          "title": "跨專案能力索引",
+          "text": "讓 AI agent 知道哪個專案能做什麼，並記住走過的路。"
+        },
+        {
+          "icon": "send",
+          "title": "排程發文",
+          "text": "文章寫一次、排好時間，時間到自動登入幫你發出去。"
+        },
+        {
+          "icon": "play",
+          "title": "YouTube 學習工作台",
+          "text": "逐字稿、章節、筆記、片段、截圖，放在同一個畫面。"
+        },
+        {
+          "icon": "file",
+          "title": "PTT 閱讀器",
+          "text": "把 PTT 文章重新排版成一眼看完的介面，推文依作者聚合。"
+        },
+        {
+          "icon": "scissors",
+          "title": "剪映雙版本啟動器",
+          "text": "兩個版本的剪映並存啟動，並鎖住自動更新。"
+        }
+      ]
     }
   },
   "hide": [

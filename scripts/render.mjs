@@ -43,6 +43,19 @@ const ICONS = {
     '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5-.04-.98-.12-1.45A6 6 0 0 1 12.45 3.12C12.3 3.04 12.15 3 12 3Z"/></svg>',
 }
 
+// 「還沒公開」那張卡用的線條圖示（site.config.json 的 home.privateCard.items[].icon）
+const LINE_ICONS = {
+  server: '<rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01"/>',
+  compass: '<circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  play: '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/>',
+  file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8M16 13H8M16 17H8"/>',
+  scissors: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/>',
+  box: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>',
+}
+const lineIcon = (name) =>
+  `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LINE_ICONS[name] ?? LINE_ICONS.box}</svg>`
+
 const stars = (count) => (count > 0 ? `<span class="stars">${ICONS.star}${count}</span>` : '')
 // 專案的小標誌：有真的 logo 就用，沒有就用彩色字母方塊。
 // logoMap 與 assetBase 由每個 render 函式一開始用 useLogos() 設定（各頁的相對路徑不同）
@@ -334,6 +347,21 @@ ${band('work')}
         <p>${esc(home.kitCard.note)}</p>
         <div class="chips">${kitNames.map((name) => `<span class="chip">${esc(name)}</span>`).join('')}<span class="chip more">+${Math.max(0, kits.length - kitNames.length)}</span></div>
       </a>
+      ${
+        home.privateCard?.items?.length
+          ? `<div class="card list-card private-card">
+        <div class="list-head"><h3>${esc(home.privateCard.title ?? '')}</h3><span class="muted">${esc(home.privateCard.note ?? '')}</span></div>
+        <div class="rows">
+          ${home.privateCard.items
+            .map(
+              (item) =>
+                `<div class="row"><i class="row-icon">${lineIcon(item.icon)}</i><span><strong>${esc(item.title ?? '')}</strong><span class="muted">${esc(item.text ?? '')}</span></span></div>`,
+            )
+            .join('')}
+        </div>
+      </div>`
+          : ''
+      }
     </div>
   </div>
 </section>
