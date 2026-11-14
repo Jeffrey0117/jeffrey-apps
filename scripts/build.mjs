@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { fetchContributionDays, fetchRecentCommits, fetchRepos, findToken, withLivePages } from './github.mjs'
 import { buildLog, buildProjects, languageCounts, latestPerRepo, pagesUrlFor, recentActivity, summarize } from './model.mjs'
 import { renderMarkdown, splitFrontMatter, takeTitle } from './markdown.mjs'
-import { renderAbout, renderDevlog, renderGuide, renderGuides, renderHome, renderProject, renderWork } from './render.mjs'
+import { renderAbout, renderDevlog, renderGuide, renderGuides, renderHome, renderPrivate, renderProject, renderWork } from './render.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = join(root, 'dist')
@@ -253,6 +253,10 @@ const guideImages = join(root, 'guides', 'img')
 if (existsSync(guideImages)) cpSync(guideImages, join(dist, 'assets', 'guides'), { recursive: true })
 mkdirSync(join(dist, 'me'), { recursive: true })
 writeFileSync(join(dist, 'me', 'index.html'), renderAbout(data), 'utf8')
+if (config.home?.privateCard?.items?.length) {
+  mkdirSync(join(dist, 'wip'), { recursive: true })
+  writeFileSync(join(dist, 'wip', 'index.html'), renderPrivate(data), 'utf8')
+}
 writeFileSync(join(dist, '.nojekyll'), '', 'utf8')
 
 const { cat, shots, logos, og, hero, contact } = data.images

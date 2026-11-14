@@ -200,8 +200,100 @@
           "icon": "scissors",
           "title": "剪映雙版本啟動器",
           "text": "兩個版本的剪映並存啟動，並鎖住自動更新。"
+        },
+        {
+          "icon": "git",
+          "title": "自架 Git 平台",
+          "text": "自架的 Gitea，加上 AI 程式碼審查和 Telegram 通知，跟部署平台串在一起。"
+        },
+        {
+          "icon": "zap",
+          "title": "零設定部署工具",
+          "text": "全端 app 用的自架部署工具，不用寫設定。"
+        },
+        {
+          "icon": "mail",
+          "title": "共用寄信服務",
+          "text": "給自己每個服務共用的寄信服務。"
+        },
+        {
+          "icon": "megaphone",
+          "title": "廣告管理後台",
+          "text": "自架的廣告管理平台。"
+        },
+        {
+          "icon": "link",
+          "title": "NotebookLM 橋接",
+          "text": "讓部署平台上的服務能透過 HTTP 使用 NotebookLM。"
+        },
+        {
+          "icon": "folder",
+          "title": ".repo 格式",
+          "text": "讓 repo 自己說明自己是什麼的檔案格式和工具。"
+        },
+        {
+          "icon": "sliders",
+          "title": "Claude Code 設定包",
+          "text": "可攜的 Claude Code 設定：agents、rules、skills 和 commands，新機器一次裝好。"
+        },
+        {
+          "icon": "layers",
+          "title": "SaaS 模板",
+          "text": "功能模組可以插拔的 SaaS 模板。"
+        },
+        {
+          "icon": "file",
+          "title": "多站部落格平台",
+          "text": "多租戶的 SEO 部落格平台，可以用 AI 產生內容。"
+        },
+        {
+          "icon": "image",
+          "title": "Markdown 圖床",
+          "text": "支援 Markdown 格式、多圖上傳的圖床。"
+        },
+        {
+          "icon": "film",
+          "title": "Reels 自動產生器",
+          "text": "用程式自動產生 Instagram Reels 短影音。"
+        },
+        {
+          "icon": "camera",
+          "title": "IG 桌面發文",
+          "text": "Instagram 桌面發文與排程，Chrome 擴充和使用者腳本兩種都有。"
+        },
+        {
+          "icon": "layout",
+          "title": "圖卡編輯器",
+          "text": "把 Markdown 變成社群圖卡，有主題、字型和 AI 寫作助手。"
+        },
+        {
+          "icon": "user",
+          "title": "個人名片平台",
+          "text": "做出有樣式的數位名片並分享，可以自訂模板。"
+        },
+        {
+          "icon": "book",
+          "title": "換書社群",
+          "text": "書籍借閱社群，有遊戲化機制和書背書架介面。"
+        },
+        {
+          "icon": "play",
+          "title": "YouTube 客戶端",
+          "text": "從 FreeTube 抽出來改的 YouTube 客戶端。"
+        },
+        {
+          "icon": "gift",
+          "title": "驚喜盒產生器",
+          "text": "互動式的驚喜盒產生器，做創意內容用。"
+        },
+        {
+          "icon": "check",
+          "title": "極簡專案管理",
+          "text": "極簡的專案管理與待辦追蹤工具。"
         }
-      ]
+      ],
+      "intro": "自己每天在用、還沒整理到可以公開的東西。之後整理好的會搬到作品那一頁。",
+      "homeCount": 6
     }
   },
   "hide": [

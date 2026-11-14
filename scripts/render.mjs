@@ -53,6 +53,32 @@ const LINE_ICONS = {
   scissors: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/>',
   box: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>',
 }
+Object.assign(LINE_ICONS, {
+  git: '<path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+  megaphone: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
+  film: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 3v18M17 3v18M3 8h4M3 16h4M17 8h4M17 16h4"/>',
+  camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  layout: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  layers: '<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+  folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 8h4M18 16h4"/>',
+  check: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 12 2 2 4-4"/>',
+  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+})
+// 一列：圖示、名稱、一句說明（不能點，因為還沒公開）
+const privateRows = (items) =>
+  (items ?? [])
+    .map(
+      (item) =>
+        `<div class="row"><i class="row-icon">${lineIcon(item.icon)}</i><span><strong>${esc(item.title ?? '')}</strong><span class="muted">${esc(item.text ?? '')}</span></span></div>`,
+    )
+    .join('')
 const lineIcon = (name) =>
   `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LINE_ICONS[name] ?? LINE_ICONS.box}</svg>`
 
@@ -352,13 +378,13 @@ ${band('work')}
           ? `<div class="card list-card private-card">
         <div class="list-head"><h3>${esc(home.privateCard.title ?? '')}</h3><span class="muted">${esc(home.privateCard.note ?? '')}</span></div>
         <div class="rows">
-          ${home.privateCard.items
-            .map(
-              (item) =>
-                `<div class="row"><i class="row-icon">${lineIcon(item.icon)}</i><span><strong>${esc(item.title ?? '')}</strong><span class="muted">${esc(item.text ?? '')}</span></span></div>`,
-            )
-            .join('')}
+          ${privateRows(home.privateCard.items.slice(0, home.privateCard.homeCount ?? 6))}
         </div>
+        ${
+          home.privateCard.items.length > (home.privateCard.homeCount ?? 6)
+            ? `<a class="more-link" href="./wip/">看更多（共 ${home.privateCard.items.length} 個）${ICONS.arrow}</a>`
+            : ''
+        }
       </div>`
           : ''
       }
@@ -542,6 +568,43 @@ export function renderGuides(data) {
     title: `教學｜${config.name ?? config.brand}`,
     description: `${config.name ?? ''} 寫的實用教學。`,
     active: 'guides',
+    body,
+    asOf,
+    images: data.images,
+    version: data.version,
+  })
+}
+
+// 還沒公開的專案：/wip/。內容來自 site.config.json 的 home.privateCard
+export function renderPrivate(data) {
+  const { config, asOf } = data
+  palette = paletteOf(config)
+  useLogos(data, '../assets/', '../work/')
+  const card = config.home?.privateCard ?? {}
+  const items = card.items ?? []
+
+  const body = `
+<section class="band band-intro private-page">
+  <div class="wrap narrow">
+    <nav class="crumbs pill" aria-label="所在位置"><a href="../">首頁</a><span aria-hidden="true">/</span><span>${esc(card.title ?? '')}</span></nav>
+    <h1 class="page-title">${esc(card.title ?? '')}</h1>
+    <p class="lede">${esc(card.intro ?? card.note ?? '')}</p>
+    <div class="card list-card private-card">
+      <div class="list-head"><h3>共 ${items.length} 個</h3><span class="muted">${esc(card.note ?? '')}</span></div>
+      <div class="rows">
+        ${privateRows(items)}
+      </div>
+    </div>
+    <p><a class="btn" href="../work/">看已經公開的作品${ICONS.arrow}</a></p>
+  </div>
+</section>`
+
+  return layout({
+    config,
+    root: '../',
+    title: `${card.title ?? ''}｜${config.name ?? config.brand}`,
+    description: card.intro ?? card.note ?? '',
+    active: '',
     body,
     asOf,
     images: data.images,
