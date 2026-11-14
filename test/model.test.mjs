@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   buildLog, buildProjects, categorize, cleanText, colorFor, firstReadmeImage, groupByDay, isSafeText, isVisible, languageCounts,
-  latestPerRepo, recentActivity, scoreLogoPath, seededRandom, summarize, toProject, wordmarkCells,
+  latestPerRepo, pagesUrlFor, recentActivity, scoreLogoPath, seededRandom, summarize, toProject, wordmarkCells,
 } from '../scripts/model.mjs'
 import { esc, renderAbout, renderDevlog, renderGuide, renderGuides, renderHome, renderProject, renderWork } from '../scripts/render.mjs'
 
@@ -170,6 +170,21 @@ test('toProject prefers the configured blurb and a real homepage', () => {
   assert.equal(app.link, 'https://bigapp.example')
   // homepage 指回 GitHub 本身的不算介紹頁
   assert.equal(toProject(repo('x', { homepage: 'https://github.com/someone/x' }), config).homepage, '')
+})
+
+test('a live GitHub Pages site stands in when the repo has no homepage', () => {
+  assert.equal(pagesUrlFor(repo('ClipTool', { url: 'https://github.com/SomeOne/ClipTool' })), 'https://someone.github.io/ClipTool/')
+  assert.equal(pagesUrlFor(repo('SomeOne.github.io', { url: 'https://github.com/SomeOne/SomeOne.github.io' })), 'https://someone.github.io/')
+  assert.equal(pagesUrlFor(repo('x', { url: 'not a url' })), '')
+
+  const withPages = toProject(repo('x', { pagesUrl: 'https://someone.github.io/x/' }), config)
+  assert.equal(withPages.homepage, 'https://someone.github.io/x/')
+  assert.equal(withPages.link, 'https://someone.github.io/x/')
+  // repo 自己填的網址優先
+  const both = toProject(repo('x', { homepage: 'https://x.example', pagesUrl: 'https://someone.github.io/x/' }), config)
+  assert.equal(both.homepage, 'https://x.example')
+  // 沒有確認過活著的 Pages（沒有 pagesUrl）不會憑空冒出連結
+  assert.equal(toProject(repo('x', { hasPages: true }), config).homepage, '')
 })
 
 test('buildProjects sorts by stars then recency; summaries add up', () => {

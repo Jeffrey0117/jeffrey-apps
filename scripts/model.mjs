@@ -181,9 +181,20 @@ export function colorFor(name, palette) {
   return palette[hash % palette.length]
 }
 
+// repo 開了 GitHub Pages 時，網站會在哪個網址（只是推算，活不活著由 build 時去確認）
+export function pagesUrlFor(repo) {
+  const match = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/?$/.exec(String(repo.url ?? ''))
+  if (!match) return ''
+  const owner = match[1].toLowerCase()
+  const name = match[2]
+  return name.toLowerCase() === `${owner}.github.io` ? `https://${owner}.github.io/` : `https://${owner}.github.io/${name}/`
+}
+
 export function toProject(repo, config) {
   const blurb = config.blurbs?.[repo.name] ?? cleanText(repo.description, repo.name)
-  const homepage = repo.homepage && isSafeText(repo.homepage, config) && !repo.homepage.includes('github.com/') ? repo.homepage : ''
+  const usable = (url) => Boolean(url) && isSafeText(url, config) && !url.includes('github.com/')
+  // repo 自己填的網址優先；沒填但有活著的 GitHub Pages 就用那個
+  const homepage = [repo.homepage, repo.pagesUrl].find(usable) ?? ''
   return {
     name: repo.name,
     blurb: isSafeText(blurb, config) ? blurb : '',

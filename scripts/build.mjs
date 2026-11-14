@@ -6,8 +6,8 @@ import { createHash } from 'node:crypto'
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { fetchContributionDays, fetchRecentCommits, fetchRepos, findToken } from './github.mjs'
-import { buildLog, buildProjects, languageCounts, latestPerRepo, recentActivity, summarize } from './model.mjs'
+import { fetchContributionDays, fetchRecentCommits, fetchRepos, findToken, withLivePages } from './github.mjs'
+import { buildLog, buildProjects, languageCounts, latestPerRepo, pagesUrlFor, recentActivity, summarize } from './model.mjs'
 import { renderMarkdown, splitFrontMatter, takeTitle } from './markdown.mjs'
 import { renderAbout, renderDevlog, renderGuide, renderGuides, renderHome, renderProject, renderWork } from './render.mjs'
 
@@ -49,7 +49,7 @@ async function loadRaw() {
   }
   const token = findToken()
   if (!token) console.warn('沒有 GitHub token：可能被流量限制擋住，而且沒有活躍度格子')
-  const repos = await fetchRepos(config.user, token)
+  const repos = await withLivePages(await fetchRepos(config.user, token), pagesUrlFor)
   const days = await fetchContributionDays(config.user, token).catch((error) => {
     console.warn(`抓不到活躍度：${error.message}`)
     return []

@@ -44,11 +44,28 @@ export async function fetchRepos(user, token) {
       stars: repo.stargazers_count ?? 0,
       language: repo.language ?? '',
       homepage: repo.homepage ?? '',
+      hasPages: Boolean(repo.has_pages),
       url: repo.html_url,
       pushedAt: repo.pushed_at,
       fork: Boolean(repo.fork),
       archived: Boolean(repo.archived),
     }))
+}
+
+// 開了 GitHub Pages 的 repo，實際去看網站在不在：直接回 200 才算。
+// 轉址不算（多半是自訂網域，不該由這裡公開），打不開的也不算（開了 Pages 但沒東西）。
+export async function withLivePages(repos, pagesUrlFor) {
+  const check = async (repo) => {
+    const url = repo.hasPages ? pagesUrlFor(repo) : ''
+    if (!url) return repo
+    try {
+      const res = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(10_000) })
+      return res.status === 200 ? { ...repo, pagesUrl: url } : repo
+    } catch {
+      return repo
+    }
+  }
+  return Promise.all(repos.map(check))
 }
 
 // 每天的貢獻次數（跟 GitHub 個人頁上那片格子同一份資料）。需要 token。
