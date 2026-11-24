@@ -43,7 +43,7 @@ build 會用 `GITHUB_TOKEN` 環境變數，沒有就用 `gh auth token`。token 
 
 ## 部署
 
-push 到 `main` 會由 GitHub Actions 跑測試、build、部署到 GitHub Pages。網站上的數字是部署當下的資料；想更新就在 Actions 頁手動執行一次，或隨便 push 一筆。
+push 到 `main` 會由 GitHub Actions 跑測試、build、部署到 GitHub Pages。網站上的數字是部署當下的資料，另外每天台灣時間 04:00 會自動重 build 一次，所以新開的專案最慢隔天就會出現。想立刻更新就在 Actions 頁手動執行一次，或隨便 push 一筆。
 
 ## 結構
 
