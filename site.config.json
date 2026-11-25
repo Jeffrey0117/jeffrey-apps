@@ -75,6 +75,7 @@
     ],
     "service": [
       "Pokkit",
+      "MySpeedTest",
       "Selfize",
       "SelfBase",
       "LetMeUse",
@@ -139,6 +140,7 @@
     "small": [
       "Pokkit",
       "pdfluv2",
+      "MySpeedTest",
       "PyClick",
       "lanpai-overlay"
     ],
